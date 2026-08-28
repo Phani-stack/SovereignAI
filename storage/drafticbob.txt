@@ -1,0 +1,13 @@
+DrafticBob — Company Overview
+DrafticBob is a technology company focused on building intelligent software solutions for businesses. The company develops AI-powered tools that help organizations automate repetitive tasks, analyze information, and improve operational efficiency.
+DrafticBob's primary product is an AI productivity platform that allows employees to interact with company documents using natural language. Users can upload documents such as PDFs, reports, manuals, and internal policies. The platform processes these documents and makes their information searchable through an AI assistant.
+The company focuses strongly on privacy and data security. Sensitive company documents are processed within the organization's infrastructure whenever possible, reducing the need to send confidential information to external services.
+DrafticBob's technology stack includes Python, FastAPI, LangChain, LangGraph, Qdrant, and locally hosted open-weight language models. Qdrant is used to store document embeddings and perform semantic similarity searches. The AI system retrieves relevant information from the vector database before generating an answer.
+The company has three major departments: Engineering, Product, and Operations.
+The Engineering department is responsible for developing and maintaining the company's software products. It includes backend engineers, AI engineers, frontend developers, and DevOps engineers.
+The Product department manages product requirements, user experience, feature planning, and customer feedback. It works closely with the Engineering department to prioritize new features.
+The Operations department handles finance, human resources, administration, and internal business processes.
+DrafticBob follows a flexible working model where employees can work remotely or from the company office depending on their role and project requirements. Employees are expected to maintain professional communication and protect confidential company information.
+The company's internal documentation includes employee policies, technical documentation, product specifications, customer information, and operational procedures. Access to confidential documents is restricted according to employee roles and permissions.
+DrafticBob's long-term goal is to create reliable, privacy-focused AI tools that allow businesses to use artificial intelligence without giving up control over their data.
+Phani is a good boy
