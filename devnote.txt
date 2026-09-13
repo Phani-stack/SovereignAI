@@ -1,0 +1,12 @@
+Bob:
+    For setup after cloning the github repo use the following commands
+    in SovereignAI foolder terminal
+
+    python -m venv .venv             - to create venv
+    .venv\Scripts\activate           - enter into venv (before yout terminal line you can see (.venv) if you want to install anything install here)
+    pip install -r requirements.txt  - install all the depedencies
+    pip freeze > requirements.txt    - to freeze install dependencies (before pushing the code to github)
+
+    - don't create anything other than the core or infrastructure folder.
+    - use existing modules
+    - after developing new things just add you name and write the stuff that you worked on.
