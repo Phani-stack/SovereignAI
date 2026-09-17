@@ -314,3 +314,4 @@ The project uses:
 * **Qdrant** - Local vector database
 * **Docker** - Container runtime for Qdrant
 * **Python 3.12.4** - Application runtime
+---
