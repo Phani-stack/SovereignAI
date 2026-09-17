@@ -15,7 +15,7 @@ A local AI workbench for private, offline-capable **RAG and local LLM inference*
 | **Vision Model**    | `qwen2.5vl:3b`     |
 | **Embedding Model** | `nomic-embed-text` |
 
----
+-- 
 
 # Ollama Models
 
