@@ -26,6 +26,21 @@ def get_coding_model():
     )
 
 
+def get_engineering_model():
+    """Model tuned through prompting for engineering and quantitative work."""
+    return ChatOllama(
+        model=settings["engineering_model"],
+        base_url=settings["ollama_base_url"],
+        # Qwen3 otherwise spends a long time producing hidden reasoning before
+        # the first visible stream token. The UI already provides a concise
+        # processing trace, so return the answer stream immediately.
+        reasoning=False,
+        temperature=settings["temperature"],
+        num_ctx=settings["num_ctx"],
+        num_predict=min(settings["num_predict"], 1200),
+    )
+
+
 def get_vision_model():
     return ChatOllama(
         model=settings["vision_model"],
@@ -37,13 +52,17 @@ def get_vision_model():
 
 
 def get_model(name: str):
-    if name == "general":
+    normalized = (name or "general").strip().lower()
+    if normalized in {"general", "qwen3", "chat"}:
         return get_general_model()
 
-    if name == "coding":
+    if normalized in {"coding", "coder"}:
         return get_coding_model()
 
-    if name == "vision":
+    if normalized in {"engineering", "engineer", "math", "maths", "calc", "cal", "qwen3:4b"}:
+        return get_engineering_model()
+
+    if normalized == "vision":
         return get_vision_model()
 
     raise ValueError(f"Unknown model: {name}")

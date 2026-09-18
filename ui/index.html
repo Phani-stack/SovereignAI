@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SOVAI - Local Agentic AI Workbench</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23171615'/%3E%3Ctext x='32' y='41' text-anchor='middle' font-family='Arial,sans-serif' font-size='30' font-weight='700' fill='%23f7f6f3'%3ES%3C/text%3E%3C/svg%3E">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="is-booting">
+    <div class="boot-skeleton" aria-hidden="true">
+        <div class="boot-sidebar">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <div class="boot-main">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <div class="boot-panel">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+    </div>
+    <div class="app-shell" id="appShell">
+        <div class="mobile-scrim" id="sidebarOverlay"></div>
+
+        <aside class="sidebar" id="sidebar" aria-label="Primary navigation">
+            <div class="sidebar-header">
+                <div class="brand-lockup">
+                    <img src="assets/logo.jpg" alt="SOVAI Logo" class="brand-logo">
+                    <div>
+                        <strong>SOVAI</strong>
+                        <span>SOVAI local workbench</span>
+                    </div>
+                </div>
+                <button class="icon-button sidebar-collapse-btn" id="sidebarClose" type="button" aria-label="Collapse sidebar" title="Collapse sidebar">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="sidebar-actions">
+                <button class="new-task-button" id="newTaskBtn" type="button">
+                    <span aria-hidden="true">+</span>
+                    New Task
+                </button>
+                <label class="search-box" aria-label="Search past conversations">
+                    <span aria-hidden="true">⌕</span>
+                    <input id="historySearch" type="search" placeholder="Search conversations">
+                </label>
+            </div>
+
+            <nav class="sidebar-scroll" aria-label="SOVAI sections">
+                <section class="nav-group">
+                    <h2>Navigation</h2>
+                    <button class="nav-item active" data-view="chatView" type="button"><span aria-hidden="true">⌁</span> Chat</button>
+                    <button class="nav-item" data-view="codeView" type="button"><span aria-hidden="true">⌘</span> Code</button>
+                    <button class="nav-item" data-view="tasksView" type="button"><span aria-hidden="true">□</span> Tasks</button>
+                    <button class="nav-item" data-view="documentsView" type="button"><span aria-hidden="true">▤</span> Documents</button>
+                    <button class="nav-item" data-view="ragView" type="button"><span aria-hidden="true">◇</span> RAG Knowledge Base</button>
+                    <button class="nav-item" data-view="toolsView" type="button"><span aria-hidden="true">⚙</span> Tool Library</button>
+                    <button class="nav-item" data-view="sandboxView" type="button"><span aria-hidden="true">▣</span> Sandbox</button>
+                </section>
+
+                <section class="history-section" aria-label="Conversation history">
+                    <h2>Today</h2>
+                    <p class="history-empty">No conversations yet</p>
+
+                    <h2>Yesterday</h2>
+                    <p class="history-empty">No conversations</p>
+
+                    <h2>Previous 7 days</h2>
+                    <p class="history-empty">No conversations</p>
+                </section>
+            </nav>
+
+            <div class="sidebar-footer">
+                <button class="nav-item settings-link" data-view="settingsView" type="button"><span aria-hidden="true">⚙</span> Settings</button>
+
+                <div class="account-card" id="accountCard" aria-expanded="false">
+                    <button class="account-trigger" id="accountTrigger" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="accountMenu">
+                        <div class="avatar account-avatar" id="accountAvatar" aria-hidden="true">ML</div>
+                        <div class="account-main">
+                            <strong id="accountName">Maya Lopez</strong>
+                            <span id="accountRole">Maintenance Engineer · Maintenance</span>
+                            <span class="account-local-status"><span class="status-dot" aria-hidden="true"></span> Active local account: <strong id="accountLocalName">ENG-04</strong></span>
+                        </div>
+                        <span class="account-caret" aria-hidden="true">▾</span>
+                    </button>
+
+                    <div class="account-menu" id="accountMenu" role="menu" aria-label="User account actions">
+                        <button class="menu-item" type="button" role="menuitem" data-action="profile">Profile</button>
+                        <button class="menu-item" type="button" role="menuitem" data-action="settings">Settings</button>
+                        <button class="menu-item" type="button" role="menuitem" data-action="switch-account">Switch account</button>
+                        <button class="menu-item danger" type="button" role="menuitem" data-action="sign-out">Sign out</button>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <main class="main-column">
+            <header class="topbar">
+                <div class="topbar-left">
+                    <button class="icon-button hamburger-btn sidebar-toggle" id="sidebarToggle" type="button" aria-label="Toggle navigation sidebar" title="Toggle navigation (☰ / Ctrl+B)">
+                        <svg class="hamburger-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="3" y1="6" x2="21" y2="6"></line>
+                            <line x1="3" y1="12" x2="21" y2="12"></line>
+                            <line x1="3" y1="18" x2="21" y2="18"></line>
+                        </svg>
+                    </button>
+                    <div>
+                        <span class="eyebrow">Workspace</span>
+                        <h1 id="workspaceTitle">Industrial Analysis</h1>
+                    </div>
+                </div>
+
+                <div class="topbar-actions">
+                    <div class="network-chip" aria-label="Zero external network calls">
+                        <span class="status-dot" aria-hidden="true"></span>
+                        0 external network calls
+                    </div>
+                    <label class="model-select-wrap" aria-label="Model selector">
+                        <span>Model</span>
+                        <select id="modelSelector">
+                            <option value="auto">Auto</option>
+                            <option value="qwen3">Qwen3:4B - Chat / RAG</option>
+                            <option value="coder">Qwen2.5-Coder:3B - Code generation</option>
+                            <option value="engineering">Qwen3:4B - Engineering / Math / Calculations</option>
+                            <option value="vision">Qwen2.5-VL:3B - Vision / OCR</option>
+                        </select>
+                    </label>
+                    <button class="icon-button hamburger-btn inspector-toggle" id="agentPanelToggle" type="button" aria-label="Toggle agent inspector panel" title="Toggle agent panel (☰)">
+                        <svg class="hamburger-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="3" y1="6" x2="21" y2="6"></line>
+                            <line x1="3" y1="12" x2="21" y2="12"></line>
+                            <line x1="3" y1="18" x2="21" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+            </header>
+
+            <section class="workspace" id="workspace">
+                <section class="center-panel">
+                    <section class="view active" id="chatView" data-title="Industrial Analysis" aria-label="Conversation">
+                        <div class="chat-scroll" id="messages" aria-live="polite" aria-relevant="additions">
+                            <div class="chat-intro">
+                                <span class="eyebrow">Ask SOVAI</span>
+                                <h2>Reason over local files, code, and knowledge without leaving the device.</h2>
+                                <p>The active workspace is local-first, with model routing, retrieval citations, sandbox logs, and verification visible after a task runs.</p>
+                                <div class="suggestion-grid" aria-label="Suggested prompts">
+                                    <button class="suggestion-prompt" type="button">Summarize an uploaded maintenance report</button>
+                                    <button class="suggestion-prompt" type="button">Extract risks from a scanned inspection image</button>
+                                    <button class="suggestion-prompt" type="button">Draft a local verification plan</button>
+                                    <button class="suggestion-prompt" type="button">Generate a sandbox-ready Python check</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="composer-shell" id="composerDropZone">
+                            <div class="upload-chips" id="uploadChips" aria-live="polite"></div>
+                            <form class="composer" id="composer">
+                                <div class="composer-attach-wrapper" id="attachWrapper">
+                                    <button class="composer-icon-button attach-button" id="attachBtn" type="button" aria-label="Select files or documents" aria-haspopup="true" aria-expanded="false" title="Attach files or select options">+</button>
+                                    
+                                    <!-- File Selection Options Popover -->
+                                    <div class="attach-menu" id="attachMenu" role="menu" aria-label="File selection options">
+                                        <div class="attach-menu-header">
+                                            <span>Select &amp; Attach Files</span>
+                                        </div>
+                                        <button type="button" class="attach-menu-item" data-action="upload-all" role="menuitem">
+                                            <span class="attach-item-icon">📂</span>
+                                            <div class="attach-item-info">
+                                                <strong>All Files</strong>
+                                                <small>Browse all supported local formats</small>
+                                            </div>
+                                        </button>
+                                        <button type="button" class="attach-menu-item" data-action="upload-doc" role="menuitem">
+                                            <span class="attach-item-icon">📄</span>
+                                            <div class="attach-item-info">
+                                                <strong>Documents &amp; Reports</strong>
+                                                <small>PDF, Word (.docx), Markdown (.md), TXT</small>
+                                            </div>
+                                        </button>
+                                        <button type="button" class="attach-menu-item" data-action="upload-img" role="menuitem">
+                                            <span class="attach-item-icon">🖼️</span>
+                                            <div class="attach-item-info">
+                                                <strong>Images &amp; OCR Scans</strong>
+                                                <small>PNG, JPG, WEBP, Scanned blueprints</small>
+                                            </div>
+                                        </button>
+                                        <button type="button" class="attach-menu-item" data-action="upload-code" role="menuitem">
+                                            <span class="attach-item-icon">💻</span>
+                                            <div class="attach-item-info">
+                                                <strong>Code &amp; Scripts</strong>
+                                                <small>Python, JS/TS, JSON, SQL, Shell, Configs</small>
+                                            </div>
+                                        </button>
+                                        <button type="button" class="attach-menu-item" data-action="upload-data" role="menuitem">
+                                            <span class="attach-item-icon">📊</span>
+                                            <div class="attach-item-info">
+                                                <strong>Data &amp; Spreadsheets</strong>
+                                                <small>CSV, Excel (.xlsx, .xls), Telemetry logs</small>
+                                            </div>
+                                        </button>
+                                        <button type="button" class="attach-menu-item" data-action="upload-folder" role="menuitem">
+                                            <span class="attach-item-icon">📁</span>
+                                            <div class="attach-item-info">
+                                                <strong>Folder / Directory</strong>
+                                                <small>Upload entire workspace directory</small>
+                                            </div>
+                                        </button>
+                                        <div class="attach-menu-divider"></div>
+                                        <button type="button" class="attach-menu-item highlight" data-action="pick-rag" role="menuitem">
+                                            <span class="attach-item-icon">◇</span>
+                                            <div class="attach-item-info">
+                                                <strong>RAG Knowledge Base</strong>
+                                                <small>Attach from indexed company documents</small>
+                                            </div>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <button class="composer-icon-button voice-button" id="voiceBtn" type="button" aria-label="Voice input">Mic</button>
+                                <textarea id="messageInput" rows="1" placeholder="Ask SOVAI..." aria-label="Ask SOVAI"></textarea>
+                                <button class="send-button" id="sendBtn" type="submit" disabled>Send</button>
+                            </form>
+                            <div class="composer-footer">
+                                <span class="verification-notice" role="note">SOVAI can make mistakes. Check important information.</span>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="view utility-view" id="codeView" data-title="Code">
+                        <div class="view-header">
+                            <span class="eyebrow">Code</span>
+                            <h2>Code generation workspace</h2>
+                            <p>Routes generation and refactoring tasks to Qwen2.5-Coder:3B with local execution available.</p>
+                        </div>
+                        <div class="empty-state">
+                            <h3>No code outputs yet</h3>
+                            <p>Generated code, copy actions, and sandbox controls will appear after a code task runs.</p>
+                        </div>
+                    </section>
+
+                    <section class="view utility-view" id="tasksView" data-title="Tasks">
+                        <div class="view-header">
+                            <span class="eyebrow">Tasks</span>
+                            <h2>Agent task queue</h2>
+                            <p>Track active, queued, and verified local agent work.</p>
+                        </div>
+                        <div class="empty-state">
+                            <h3>No tasks yet</h3>
+                            <p>Tasks will appear here after SOVAI starts a local agent run.</p>
+                        </div>
+                    </section>
+
+                    <section class="view utility-view" id="documentsView" data-title="Documents">
+                        <div class="view-header row-header">
+                            <div>
+                                <span class="eyebrow">Documents</span>
+                                <h2>Document Hub</h2>
+                                <p>Manage uploaded RAG knowledge base files and view AI-generated reports.</p>
+                            </div>
+                            <button class="primary-button" id="documentUploadBtn" type="button">Upload documents</button>
+                        </div>
+                        <div class="doc-subnav-tabs" style="display: flex; gap: 0.75rem; margin: 1rem 0 1.5rem 0; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 0.75rem;">
+                            <button type="button" id="docTabUploaded" class="doc-tab-btn active" style="padding: 8px 16px; border-radius: 6px; border: 1px solid rgba(16, 185, 129, 0.4); background: rgba(16, 185, 129, 0.15); color: #10b981; font-weight: 600; font-size: 0.88rem; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s ease;">
+                                📁 Uploaded Documents <span id="docUploadedBadge" style="background: rgba(16, 185, 129, 0.25); color: #10b981; padding: 2px 8px; border-radius: 10px; font-size: 0.75rem; font-weight: 700;">0</span>
+                            </button>
+                            <button type="button" id="docTabGenerated" class="doc-tab-btn" style="padding: 8px 16px; border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.1); background: rgba(24, 24, 27, 0.6); color: #a1a1aa; font-weight: 600; font-size: 0.88rem; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s ease;">
+                                🤖 AI Generated Artifacts <span id="docGeneratedBadge" style="background: rgba(255, 255, 255, 0.1); color: #a1a1aa; padding: 2px 8px; border-radius: 10px; font-size: 0.75rem; font-weight: 700;">0</span>
+                            </button>
+                        </div>
+                        <div id="documentsList" class="documents-list">
+                            <div class="empty-state" id="documentsEmptyState">
+                                <h3>No documents available</h3>
+                                <p>Uploaded files will appear here with indexing status and document actions.</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="view utility-view" id="ragView" data-title="RAG Knowledge Base">
+                        <div class="view-header">
+                            <span class="eyebrow">RAG Knowledge Base</span>
+                            <h2>Collections and retrieval health</h2>
+                            <p>Organize documents by department or project and inspect retrieval coverage.</p>
+                        </div>
+                        <div id="ragCollectionsList" class="rag-collections-list">
+                            <div class="empty-state">
+                                <h3>No knowledge collections</h3>
+                                <p>Collections will appear after local documents are indexed into the vector store.</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="view utility-view" id="toolsView" data-title="Tool Library">
+                        <div class="view-header">
+                            <span class="eyebrow">Tool Library</span>
+                            <h2>Local tools</h2>
+                            <p>Every listed tool runs inside the local environment.</p>
+                        </div>
+                        <div class="dashboard-grid">
+                            <article class="panel-card tool-card"><h3>Code Executor</h3><span class="local-badge">Available · Local</span></article>
+                            <article class="panel-card tool-card"><h3>Document Reader</h3><span class="local-badge">Available · Local</span></article>
+                            <article class="panel-card tool-card"><h3>OCR</h3><span class="local-badge">Available · Local</span></article>
+                        </div>
+                    </section>
+
+                    <section class="view utility-view" id="sandboxView" data-title="Sandbox">
+                        <div class="view-header row-header" style="padding-bottom: 16px; border-bottom: 1px solid var(--line);">
+                            <div>
+                                <span class="eyebrow" style="color: #10b981; font-weight: 600;">Sandbox Engine</span>
+                                <h2 style="font-size: 1.4rem; margin: 4px 0 0 0;">Live Code Execution Console</h2>
+                                <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 4px;">Inspect real-time process logs, execute sandbox scripts, and monitor system output.</p>
+                            </div>
+                            <div class="button-row" style="display: flex; gap: 8px; align-items: center;">
+                                <button class="primary-button" id="sandboxRerunBtn" type="button" style="display: flex; align-items: center; gap: 6px; background: #10b981; color: #000; font-weight: 600; padding: 6px 14px; border-radius: 6px; cursor: pointer;">▶ Run Sandbox</button>
+                                <button class="secondary-button" id="sandboxClearBtn" type="button" style="display: flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 6px; cursor: pointer;">🗑️ Clear Logs</button>
+                            </div>
+                        </div>
+
+                        <!-- Live Status Badges Bar -->
+                        <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; background: rgba(24, 24, 27, 0.7); border: 1px solid var(--line); border-radius: 8px; margin: 16px 0; font-size: 0.8rem; font-family: monospace;">
+                            <div style="display: flex; gap: 16px; align-items: center;">
+                                <span style="display: flex; align-items: center; gap: 6px; color: #10b981; font-weight: 600;">
+                                    <span style="width: 8px; height: 8px; border-radius: 50%; background: #10b981; box-shadow: 0 0 8px #10b981;"></span>
+                                    SANDBOX ACTIVE
+                                </span>
+                                <span style="color: #a1a1aa;">Env: <strong>Python 3.13 Local</strong></span>
+                                <span style="color: #a1a1aa;">Timeout: <strong>10s</strong></span>
+                            </div>
+                            <span id="sandboxStatusBadge" style="background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); padding: 2px 8px; border-radius: 4px; font-weight: 600;">READY</span>
+                        </div>
+
+                        <!-- Sandbox Grid: Code Editor + Live Terminal Logs -->
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; min-height: 380px;">
+                            <!-- Code Input Column -->
+                            <div style="display: flex; flex-direction: column; background: #09090b; border: 1px solid var(--line); border-radius: 10px; overflow: hidden;">
+                                <div style="padding: 8px 14px; background: #18181b; border-bottom: 1px solid var(--line); font-family: monospace; font-size: 0.78rem; color: #a1a1aa; display: flex; align-items: center; justify-content: space-between;">
+                                    <span>script.py</span>
+                                    <span style="font-size: 0.7rem; color: #71717a;">Editable Python Input</span>
+                                </div>
+                                <textarea id="sandboxCodeEditor" style="flex: 1; width: 100%; min-height: 320px; background: transparent; color: #f4f4f5; border: none; padding: 14px; font-family: 'Consolas', 'Fira Code', monospace; font-size: 0.88rem; line-height: 1.5; resize: vertical; outline: none;" spellcheck="false"># SovereignAI Sandbox Execution Test
+import time
+
+print("[LOG] Initializing SovereignAI Sandbox Engine...")
+print("[LOG] Validating runtime environment...")
+time.sleep(0.2)
+print("[LOG] Memory check: OK")
+print("[LOG] Running calculation...")
+
+result = sum([i * 2 for i in range(1, 6)])
+print(f"[RESULT] Calculation complete! Sum = {result}")
+print("[SUCCESS] Sandbox task finished successfully.")</textarea>
+                            </div>
+
+                            <!-- Live Terminal Logs Column -->
+                            <div style="display: flex; flex-direction: column; background: #09090b; border: 1px solid var(--line); border-radius: 10px; overflow: hidden;">
+                                <div style="padding: 8px 14px; background: #18181b; border-bottom: 1px solid var(--line); font-family: monospace; font-size: 0.78rem; color: #10b981; display: flex; align-items: center; justify-content: space-between;">
+                                    <span>>_ Live Execution Terminal</span>
+                                    <button type="button" id="sandboxCopyLogsBtn" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: #e4e4e7; border-radius: 4px; padding: 2px 8px; font-size: 0.72rem; cursor: pointer;">Copy Logs</button>
+                                </div>
+                                <div id="sandboxOutputConsole" style="flex: 1; padding: 14px; background: #09090b; color: #10b981; font-family: 'Consolas', 'Fira Code', monospace; font-size: 0.85rem; line-height: 1.5; white-space: pre-wrap; overflow-y: auto; max-height: 380px;">[READY] Click "Run Sandbox" to execute code and view real-time logs...</div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="view utility-view" id="settingsView" data-title="Settings">
+                        <div class="view-header">
+                            <span class="eyebrow">Settings</span>
+                            <h2>Theme and local trust preferences</h2>
+                            <p>Theme selection is persisted locally and applies across every panel.</p>
+                        </div>
+                        <div class="settings-card">
+                            <h3>Theme</h3>
+                            <div class="segmented-control" role="radiogroup" aria-label="Theme setting">
+                                <button class="theme-option" data-theme="light" type="button">Light</button>
+                                <button class="theme-option" data-theme="dark" type="button">Dark</button>
+                                <button class="theme-option" data-theme="system" type="button">System</button>
+                            </div>
+                        </div>
+                        <div class="settings-card">
+                            <h3>System</h3>
+                            <div class="metric-row"><span>Runtime</span><strong>Ollama</strong></div>
+                            <div class="metric-row"><span>Environment</span><strong>Local</strong></div>
+                            <div class="metric-row"><span>Network</span><strong>Restricted</strong></div>
+                        </div>
+                    </section>
+                </section>
+
+                <aside class="right-panel" id="agentPanel" aria-label="Agent execution and system status">
+                    <div class="right-panel-header">
+                        <div>
+                            <span class="eyebrow">Agent status</span>
+                            <h2>Execution</h2>
+                        </div>
+                        <button class="icon-button panel-close" id="agentPanelClose" type="button" aria-label="Collapse right panel" title="Collapse right panel">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <section class="status-summary" aria-label="Current agent state">
+                        <div class="metric-row"><span>Sovereignty</span><strong><span class="status-dot"></span>Local · 0 external calls</strong></div>
+                        <div class="metric-row"><span>Active model</span><strong id="activeModelBadge">Auto</strong></div>
+                        <div class="metric-row"><span>Last verification</span><strong id="verificationStatus">Idle</strong></div>
+                    </section>
+
+                    <details class="status-card" open>
+                        <summary>Sources</summary>
+                        <div class="metric-row"><span>Vector DB</span><strong>Not connected</strong></div>
+                        <div class="metric-row"><span>Documents</span><strong>None indexed</strong></div>
+                        <div class="metric-row"><span>Chunks retrieved</span><strong>Idle</strong></div>
+                    </details>
+
+                    <details class="status-card" open>
+                        <summary>Tools</summary>
+                        <div class="tool-line"><span>Code Executor</span><strong>Idle · Local</strong></div>
+                        <div class="tool-line"><span>Document Reader</span><strong>Idle · Local</strong></div>
+                        <div class="tool-line"><span>OCR</span><strong>Idle · Local</strong></div>
+                    </details>
+                </aside>
+            </section>
+        </main>
+    </div>
+
+    <!-- Knowledge Base Document Picker Modal -->
+    <div class="modal-overlay" id="ragPickerModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="ragModalTitle">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div>
+                    <span class="eyebrow">RAG Knowledge Base</span>
+                    <h2 id="ragModalTitle">Select Indexed Documents</h2>
+                </div>
+                <button class="icon-button modal-close" id="ragPickerClose" type="button" aria-label="Close dialog">✕</button>
+            </div>
+            <div class="modal-search">
+                <span aria-hidden="true">⌕</span>
+                <input id="ragPickerSearch" type="search" placeholder="Search knowledge base files...">
+            </div>
+            <div class="modal-list" id="ragPickerList"></div>
+            <div class="modal-footer">
+                <span class="modal-counter" id="ragSelectedCount">0 documents selected</span>
+                <div class="button-row">
+                    <button class="secondary-button" id="ragPickerCancel" type="button">Cancel</button>
+                    <button class="primary-button" id="ragPickerAttachBtn" type="button" disabled>Attach Selected</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Image Attachment Modal -->
+    <div class="modal-overlay" id="imagePickerModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="imageModalTitle" style="display: none; align-items: center; justify-content: center; background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(4px);">
+        <div class="modal-card" style="max-width: 640px; width: 90%; border-radius: 12px; margin: auto; box-shadow: 0 20px 40px rgba(0,0,0,0.5); overflow: hidden;">
+            <div class="modal-header" style="padding: 16px 20px; border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between;">
+                <div>
+                    <span class="eyebrow" style="color: var(--accent); font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">Vision AI Engine</span>
+                    <h2 id="imageModalTitle" style="margin: 2px 0 0 0; font-size: 1.25rem; font-weight: 600;">Attach Image for Analysis</h2>
+                </div>
+                <button class="icon-button modal-close" id="imagePickerClose" type="button" aria-label="Close dialog">✕</button>
+            </div>
+            
+            <div class="image-picker-toolbar" style="padding: 14px 20px; background: rgba(255, 255, 255, 0.02); border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+                <button type="button" id="imgTabComputer" class="primary-button" style="min-height: 38px; padding: 0 16px; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 500;">
+                    💻 Upload New Image from Computer
+                </button>
+                <span style="font-size: 0.8rem; color: var(--text-muted);">or choose from gallery below</span>
+            </div>
+
+            <div id="imageGalleryContainer" style="padding: 20px; max-height: 340px; overflow-y: auto;">
+                <div id="imageGalleryGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 14px;"></div>
+                <div id="imageGalleryEmpty" class="empty-state" style="padding: 32px 0; text-align: center;">
+                    <h3>No stored images found</h3>
+                    <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 4px;">Click "Upload New Image from Computer" to attach your first image.</p>
+                </div>
+            </div>
+
+            <div class="modal-footer" style="padding: 14px 20px; border-top: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between;">
+                <span class="modal-counter" id="imageSelectedCount" style="font-size: 0.85rem; color: var(--text-muted);">No image selected</span>
+                <div class="button-row" style="display: flex; gap: 10px;">
+                    <button class="secondary-button" id="imagePickerCancel" type="button">Cancel</button>
+                    <button class="primary-button" id="imagePickerAttachBtn" type="button" disabled>Attach to Prompt</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden File Inputs -->
+    <input type="file" id="directDocInput" accept=".pdf,.docx,.doc,.txt,.md,.rtf,.csv,.xlsx,.xls,.py,.js,.json" hidden multiple>
+    <input type="file" id="fileInputAll" accept=".pdf,.docx,.doc,.txt,.md,.rtf,.png,.jpg,.jpeg,.webp,.py,.js,.ts,.json,.csv,.xlsx,.xls,.sql,.sh,.html,.css" hidden multiple>
+    <input type="file" id="fileInputDoc" accept=".pdf,.docx,.doc,.txt,.md,.rtf" hidden multiple>
+    <input type="file" id="fileInputImg" accept="image/png,image/jpeg,image/webp,.png,.jpg,.jpeg,.webp" hidden multiple>
+    <input type="file" id="fileInputCode" accept=".py,.js,.ts,.json,.sql,.sh,.cpp,.c,.java,.rs,.go,.yml,.yaml,.html,.css" hidden multiple>
+    <input type="file" id="fileInputData" accept=".csv,.xlsx,.xls,.tsv,.json" hidden multiple>
+    <input type="file" id="fileInputFolder" webkitdirectory directory hidden multiple>
+
+    <script src="js/app.js?v=20260918-stopped-state"></script>
+</body>
+</html>

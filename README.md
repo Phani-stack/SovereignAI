@@ -15,7 +15,7 @@ A local AI workbench for private, offline-capable **RAG and local LLM inference*
 | **Vision Model**    | `qwen2.5vl:3b`     |
 | **Embedding Model** | `nomic-embed-text` |
 
--- 
+---
 
 # Ollama Models
 
@@ -314,4 +314,15 @@ The project uses:
 * **Qdrant** - Local vector database
 * **Docker** - Container runtime for Qdrant
 * **Python 3.12.4** - Application runtime
----
+# Engineering and mathematics model
+
+SOVAI includes a dedicated **Engineering / Math / Calculations** route in the model selector. By default it uses `qwen3:4b` with a technical response guide for equations, units, assumptions, numbered working, and final answers.
+
+```bash
+ollama pull qwen3:4b
+```
+
+Override the local model with `ENGINEERING_MODEL` in your environment if required.
+
+Normal startup disables Uvicorn auto-reload so an active local-model stream is not
+terminated by a file change. Developers can opt in with `SOVAI_RELOAD=true`.
