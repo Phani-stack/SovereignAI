@@ -1,6 +1,6 @@
-# SoverignAI
+# SovereignAI
 
-A local AI workbench for private, offline-capable **RAG and local LLM inference** using Ollama and Qdrant.
+A local AI workbench for private, offline-capable **RAG, local LLM inference, and vision analysis** using Ollama and Qdrant.
 
 ## Requirements
 
@@ -9,9 +9,10 @@ A local AI workbench for private, offline-capable **RAG and local LLM inference*
 | **Python**          | `3.12.4`           |
 | **Package Manager** | `uv`               |
 | **Docker**          | `28.4.0`           |
-| **Vector Database** | Qdrant             |
+| **Vector Database** | Qdrant (optional for uploads) |
 | **LLM**             | `qwen2.5:3b`       |
-| **Coding Model**    | `qwen2.5-coder:7b` |
+| **Coding Model**    | `qwen2.5-coder:3b` |
+| **Engineering Model** | `qwen3:4b`       |
 | **Vision Model**    | `qwen2.5vl:3b`     |
 | **Embedding Model** | `nomic-embed-text` |
 
@@ -25,7 +26,8 @@ The project uses the following local Ollama models:
 | ------------------ | -------------------------------------- |
 | `nomic-embed-text` | Generate document and query embeddings |
 | `qwen2.5:3b`       | General-purpose AI tasks               |
-| `qwen2.5-coder:7b` | Coding-related tasks                   |
+| `qwen2.5-coder:3b` | Coding-related tasks                   |
+| `qwen3:4b`         | Engineering, mathematics, and calculations |
 | `qwen2.5vl:3b`     | Image and vision-related tasks         |
 
 Pull all required models:
@@ -33,7 +35,8 @@ Pull all required models:
 ```bash
 ollama pull nomic-embed-text
 ollama pull qwen2.5:3b
-ollama pull qwen2.5-coder:7b
+ollama pull qwen2.5-coder:3b
+ollama pull qwen3:4b
 ollama pull qwen2.5vl:3b
 ```
 
@@ -48,7 +51,8 @@ The following models should be available:
 ```text
 nomic-embed-text
 qwen2.5:3b
-qwen2.5-coder:7b
+qwen2.5-coder:3b
+qwen3:4b
 qwen2.5vl:3b
 ```
 
@@ -60,7 +64,7 @@ qwen2.5vl:3b
 
 ```bash
 git clone <repository-url>
-cd SoverignAI
+cd SovereignAI
 ```
 
 ## 2. Create the Virtual Environment
@@ -145,6 +149,25 @@ Alternatively:
 uv run python main.py
 ```
 
+## Attachments and Vision
+
+Use the `+` button in the composer to attach files:
+
+| Attachment | Processing path |
+| --- | --- |
+| PNG, JPG, JPEG, WEBP, SVG, GIF | Qwen2.5-VL vision model |
+| PDF, DOC, DOCX | Text extraction plus Qwen2.5-VL analysis |
+| TXT, Markdown, code, CSV, spreadsheets | Document upload and RAG/chat processing |
+
+Images and PDF/Word documents can be sent with a question to the vision model.
+The backend saves uploaded files before processing them. Qdrant indexes documents
+for retrieval, but an upload still succeeds when Qdrant is offline; the server
+logs an `RAG Indexing Warning` and skips vector indexing in that case.
+
+The default vision model is `qwen2.5vl:3b`. Override local model settings with
+environment variables such as `VISION_MODEL`, `OLLAMA_BASE_URL`, and
+`EMBEDDING_MODEL` before starting the backend.
+
 ---
 
 # Development Workflow
@@ -153,7 +176,7 @@ After cloning the repository:
 
 ```bash
 git clone <repository-url>
-cd SoverignAI
+cd SovereignAI
 ```
 
 Sync the project environment:
@@ -259,7 +282,7 @@ The following models should be available:
 ```text
 nomic-embed-text
 qwen2.5:3b
-qwen2.5-coder:7b
+qwen2.5-coder:3b
 qwen2.5vl:3b
 ```
 
@@ -282,7 +305,7 @@ For a new developer:
 git clone <repository-url>
 
 # Enter project
-cd SoverignAI
+cd SovereignAI
 
 # Create/sync environment and install dependencies
 uv sync
@@ -293,7 +316,7 @@ docker run -p 6333:6333 -p 6334:6334 qdrant/qdrant
 # Pull Ollama models
 ollama pull nomic-embed-text
 ollama pull qwen2.5:3b
-ollama pull qwen2.5-coder:7b
+ollama pull qwen2.5-coder:3b
 ollama pull qwen2.5vl:3b
 
 # Verify models
@@ -326,3 +349,30 @@ Override the local model with `ENGINEERING_MODEL` in your environment if require
 
 Normal startup disables Uvicorn auto-reload so an active local-model stream is not
 terminated by a file change. Developers can opt in with `SOVAI_RELOAD=true`.
+
+## Troubleshooting
+
+### `Unsupported file format '.png'`
+
+Use `+` followed by **Images & OCR Scans**. Do not upload images through the
+Documents page; that endpoint accepts document formats only.
+
+### `Connection refused` during RAG indexing
+
+Start Qdrant and retry indexing:
+
+```bash
+docker run -p 6333:6333 -p 6334:6334 qdrant/qdrant
+```
+
+The application can still upload and process files without Qdrant, but retrieval
+from the knowledge base is unavailable until Qdrant is running.
+
+### `pytesseract` is unavailable
+
+Direct image understanding uses Qwen2.5-VL. OCR fallback additionally requires
+the optional Python package and the Tesseract system executable:
+
+```bash
+uv add pytesseract
+```
