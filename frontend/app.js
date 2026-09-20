@@ -5,7 +5,6 @@
 const root = document.documentElement;
 
 const sidebar = document.getElementById("sidebar");
-const menuButton = document.getElementById("menuButton");
 const sidebarCollapse = document.getElementById("sidebarCollapse");
 
 const rightMenuButton = document.getElementById("rightMenuButton");
@@ -22,10 +21,13 @@ const fileInput = document.getElementById("fileInput");
 
 const sidebarLogo = document.getElementById("sidebarLogo");
 const mobileLogoTrigger = document.getElementById("mobileLogoTrigger");
+const SIDEBAR_OVERLAY_MAX_WIDTH = 1100;
 
 // State arrays
 const uploadedFiles = [];
 let chatAttachedFiles = [];
+let pendingUploadContext = "files";
+let visionAnalysisTimer;
 
 const pageNames = {
   dashboard: ["SECURE WORKSPACE", "Dashboard"],
@@ -91,8 +93,10 @@ function navigate(view) {
   });
 
   const contextLabel = document.getElementById("contextLabel");
+  const breadcrumbPage = document.getElementById("breadcrumbPage");
   const pageTitle = document.getElementById("pageTitle");
-  if (contextLabel) contextLabel.textContent = pageNames[view][0];
+  if (contextLabel) contextLabel.setAttribute("aria-label", `SOVAI / ${pageNames[view][1]}`);
+  if (breadcrumbPage) breadcrumbPage.textContent = pageNames[view][1];
   if (pageTitle) pageTitle.textContent = pageNames[view][1];
 
   if (sidebar) sidebar.classList.remove("open");
@@ -120,6 +124,7 @@ document.addEventListener("click", (event) => {
     const type = action.dataset.action;
 
     if (type === "upload") {
+      pendingUploadContext = action.closest(".chat-composer") ? "chat" : "files";
       if (fileInput) fileInput.click();
     }
 
@@ -148,19 +153,9 @@ document.addEventListener("click", () => {
   if (themeMenu) themeMenu.classList.remove("open");
 });
 
-if (menuButton) {
-  menuButton.addEventListener("click", () => {
-    if (window.innerWidth <= 900) {
-      sidebar.classList.add("open");
-    } else {
-      sidebar.classList.remove("collapsed");
-    }
-  });
-}
-
 if (sidebarLogo) {
   sidebarLogo.addEventListener("click", () => {
-    if (window.innerWidth <= 900) {
+    if (window.innerWidth <= SIDEBAR_OVERLAY_MAX_WIDTH) {
       sidebar.classList.add("open");
     } else {
       sidebar.classList.remove("collapsed");
@@ -176,13 +171,19 @@ if (mobileLogoTrigger) {
 
 if (sidebarCollapse) {
   sidebarCollapse.addEventListener("click", () => {
-    if (window.innerWidth <= 900) {
+    if (window.innerWidth <= SIDEBAR_OVERLAY_MAX_WIDTH) {
       sidebar.classList.remove("open");
     } else {
       sidebar.classList.add("collapsed");
     }
   });
 }
+
+window.addEventListener("resize", () => {
+  if (window.innerWidth <= SIDEBAR_OVERLAY_MAX_WIDTH && sidebar) {
+    sidebar.classList.remove("collapsed");
+  }
+});
 
 /* ==========================================
    RIGHT DRAWER PANEL
@@ -276,7 +277,7 @@ function getFileTypeCategory(fileName) {
   return { name: "Document", tagClass: "green" };
 }
 
-function handleFiles(files) {
+function handleFiles(files, context = "files") {
   if (!files || !files.length) return;
 
   const newlyAdded = [];
@@ -294,13 +295,17 @@ function handleFiles(files) {
     };
 
     uploadedFiles.push(fileObj);
-    chatAttachedFiles.push(fileObj);
+    if (context === "chat") {
+      chatAttachedFiles.push(fileObj);
+    }
     newlyAdded.push(file.name);
 
     addFileToTable(fileObj);
   });
 
-  renderChatAttachments();
+  if (context === "chat") {
+    renderChatAttachments();
+  }
 
   // If in multimodal view, show vision preview for the last image/file
   const activeView = document.querySelector(".view.active")?.id;
@@ -363,11 +368,76 @@ function renderChatAttachments() {
   });
 }
 
+function scrollChatToLatest() {
+  if (!chatArea) return;
+
+  chatArea.lastElementChild?.scrollIntoView({ block: "end", behavior: "smooth" });
+}
+
 function updateVisionPreview(fileObj) {
   const previewArea = document.getElementById("visionPreviewArea");
+  const analysisPanel = document.getElementById("visionAnalysisPanel");
+  const analysisList = document.getElementById("visionAnalysisList");
+  const visionGrid = document.querySelector(".vision-grid");
   if (!previewArea) return;
 
   previewArea.style.display = "block";
+
+  const isImage = fileObj.type === "Image";
+  if (visionGrid) visionGrid.classList.toggle("has-analysis", isImage);
+  if (analysisPanel) analysisPanel.style.display = isImage ? "block" : "none";
+  if (!isImage) return;
+
+  if (visionAnalysisTimer) clearInterval(visionAnalysisTimer);
+
+  const analysisSteps = [
+    ["Image loaded", "Input received inside the local workspace."],
+    ["OCR text extraction", "Reading text and document structure."],
+    ["Visual layout analysis", "Interpreting layout, symbols and context."],
+    ["Analysis ready", "Results prepared for the current workspace."],
+  ];
+
+  if (analysisList) {
+    analysisList.innerHTML = analysisSteps
+      .map(
+        ([title, detail]) => `
+          <div class="analysis-status-row">
+            <span class="analysis-status-icon">•</span>
+            <div>
+              <strong>${title}</strong>
+              <small>${detail}</small>
+            </div>
+            <span class="analysis-status-state">Queued</span>
+          </div>
+        `
+      )
+      .join("");
+
+    const rows = Array.from(analysisList.querySelectorAll(".analysis-status-row"));
+    let currentStep = 0;
+
+    const advanceAnalysis = () => {
+      rows.forEach((row, index) => {
+        const icon = row.querySelector(".analysis-status-icon");
+        const state = row.querySelector(".analysis-status-state");
+        const isComplete = index < currentStep;
+        const isActive = index === currentStep && currentStep < rows.length;
+
+        row.classList.toggle("is-complete", isComplete);
+        row.classList.toggle("is-active", isActive);
+        row.classList.toggle("is-pending", !isComplete && !isActive);
+
+        if (icon) icon.textContent = isComplete ? "✓" : isActive ? "…" : "•";
+        if (state) state.textContent = isComplete ? "Ready" : isActive ? "Analyzing" : "Queued";
+      });
+
+      currentStep += 1;
+      if (currentStep > rows.length) clearInterval(visionAnalysisTimer);
+    };
+
+    advanceAnalysis();
+    visionAnalysisTimer = setInterval(advanceAnalysis, 650);
+  }
 
   let imageHtml = "";
   if (fileObj.previewUrl) {
@@ -389,7 +459,7 @@ function updateVisionPreview(fileObj) {
     <div class="vision-preview-card">
       <div class="vision-preview-header">
         <strong>Selected File: ${escapeHtml(fileObj.name)}</strong>
-        <span class="tag ${fileObj.tagClass}">${fileObj.type}</span>
+        <span class="tag ${fileObj.tagClass}">${escapeHtml(fileObj.type)}</span>
       </div>
       ${imageHtml}
       <div class="ocr-result-box">${escapeHtml(extractedSample)}</div>
@@ -400,11 +470,18 @@ function updateVisionPreview(fileObj) {
 if (fileInput) {
   fileInput.addEventListener("change", () => {
     if (fileInput.files.length) {
-      handleFiles(Array.from(fileInput.files));
+      handleFiles(Array.from(fileInput.files), pendingUploadContext);
       fileInput.value = "";
+      pendingUploadContext = "files";
     }
   });
 }
+
+["dragover", "drop"].forEach((eventName) => {
+  window.addEventListener(eventName, (event) => {
+    event.preventDefault();
+  });
+});
 
 // Drag & Drop for all upload zones
 document.querySelectorAll(".upload-zone").forEach((zone) => {
@@ -424,7 +501,8 @@ document.querySelectorAll(".upload-zone").forEach((zone) => {
 
   zone.addEventListener("drop", (event) => {
     if (event.dataTransfer && event.dataTransfer.files.length) {
-      handleFiles(Array.from(event.dataTransfer.files));
+      const context = zone.id === "visionDropZone" ? "vision" : "files";
+      handleFiles(Array.from(event.dataTransfer.files), context);
     }
   });
 });
@@ -447,9 +525,11 @@ function sendMessage() {
     return;
   }
 
+  const welcome = chatArea?.querySelector(".chat-welcome");
+  if (welcome) welcome.remove();
+
   const user = document.createElement("div");
-  user.className = "chat-message";
-  user.style.margin = "16px 0 0 auto";
+  user.className = "chat-message user";
 
   let attachHtml = "";
   if (hasAttachments) {
@@ -458,7 +538,7 @@ function sendMessage() {
         ${chatAttachedFiles
           .map(
             (f) =>
-              `<div class="chat-message-attachment-item">📎 ${escapeHtml(f.name)} (${f.type})</div>`
+              `<div class="chat-message-attachment-item">📎 ${escapeHtml(f.name)} (${escapeHtml(f.type)})</div>`
           )
           .join("")}
       </div>
@@ -466,14 +546,16 @@ function sendMessage() {
   }
 
   user.innerHTML = `
-    <strong>You</strong>
-    <p>${text ? escapeHtml(text) : "<em>Uploaded file context for analysis</em>"}</p>
+    <div class="message-label">You</div>
+    <div class="message-content">
+      <p>${text ? escapeHtml(text).replace(/\n/g, "<br>") : "<em>Uploaded file context for analysis</em>"}</p>
+    </div>
     ${attachHtml}
   `;
 
   if (chatArea) {
     chatArea.appendChild(user);
-    chatArea.scrollTop = chatArea.scrollHeight;
+    scrollChatToLatest();
   }
 
   chatInput.value = "";
@@ -487,22 +569,30 @@ function sendMessage() {
 
     const assistant = document.createElement("div");
     assistant.className = "chat-message assistant";
-    assistant.style.marginTop = "16px";
 
     let responseText = "I have processed your message.";
     if (attachedNames.length) {
-      responseText = `I have received and indexed <strong>${attachedNames.length} document(s)</strong> (${attachedNames.join(", ")}). Context loaded into local RAG memory. ${text ? 'Regarding: "' + escapeHtml(text) + '"' : "Ready for analysis."}`;
+      const escapedAttachedNames = attachedNames.map((name) => escapeHtml(name)).join(", ");
+      responseText = `I have received and indexed <strong>${attachedNames.length} document(s)</strong> (${escapedAttachedNames}). Context loaded into local RAG memory. ${text ? 'Regarding: "' + escapeHtml(text) + '"' : "Ready for analysis."}`;
     } else {
       responseText = `Local model response to: "<em>${escapeHtml(text)}</em>". All processing conducted on-premise without external network transmission.`;
     }
 
     assistant.innerHTML = `
-      <strong>Sovereign AI</strong>
-      <p>${responseText}</p>
+      <div class="message-label">SOVAI</div>
+      <div class="message-content">
+        <p>${responseText}</p>
+        <div class="message-meta">SOVAI · Local model · Local inference</div>
+        <div class="message-actions">
+          <button data-chat-action="copy">Copy</button>
+          <button data-chat-action="regenerate">Regenerate</button>
+          <button data-chat-action="save">Save</button>
+        </div>
+      </div>
     `;
 
     chatArea.appendChild(assistant);
-    chatArea.scrollTop = chatArea.scrollHeight;
+    scrollChatToLatest();
     showToast("Response received from local engine");
   }, 450);
 }
@@ -510,13 +600,41 @@ function sendMessage() {
 if (sendChat) sendChat.addEventListener("click", sendMessage);
 
 if (chatInput) {
+  const resizeChatInput = () => {
+    chatInput.style.height = "auto";
+    chatInput.style.height = `${Math.min(chatInput.scrollHeight, 140)}px`;
+  };
+
+  chatInput.addEventListener("input", resizeChatInput);
   chatInput.addEventListener("keydown", (event) => {
-    if (event.key === "Enter" && !event.shiftKey) {
+    if (event.key === "Enter" && !event.shiftKey && !event.isComposing) {
       event.preventDefault();
       sendMessage();
     }
   });
 }
+
+document.addEventListener("click", (event) => {
+  const action = event.target.closest("[data-chat-action]");
+  if (!action) return;
+
+  const message = action.closest(".chat-message");
+  if (!message) return;
+
+  if (action.dataset.chatAction === "copy") {
+    const content = message.querySelector(".message-content p")?.innerText || "";
+    navigator.clipboard?.writeText(content);
+    showToast("Response copied");
+  }
+
+  if (action.dataset.chatAction === "save") {
+    showToast("Response saved to this workspace");
+  }
+
+  if (action.dataset.chatAction === "regenerate") {
+    showToast("Regeneration is ready for the connected local model");
+  }
+});
 
 document.querySelectorAll(".chat-suggestions button").forEach((button) => {
   button.addEventListener("click", () => {
@@ -532,6 +650,7 @@ document.querySelectorAll(".chat-suggestions button").forEach((button) => {
 ========================================== */
 
 const runCalc = document.getElementById("runCalc");
+const recentCalculations = [];
 
 if (runCalc) {
   runCalc.addEventListener("click", () => {
@@ -564,31 +683,98 @@ if (runCalc) {
 
     const calcSteps = document.getElementById("calcSteps");
     const calcResult = document.getElementById("calcResult");
+    const calcExpression = document.getElementById("calcExpression");
+    const calcFormula = document.getElementById("calcFormula");
+    const calcIntermediate = document.getElementById("calcIntermediate");
+    const calcFinal = document.getElementById("calcFinal");
+    const recentCalculationsEl = document.getElementById("recentCalculations");
+    const unitA = document.getElementById("calcUnitA")?.value;
+    const unitB = document.getElementById("calcUnitB")?.value;
+    const operationLabels = {
+      add: "Addition",
+      subtract: "Subtraction",
+      multiply: "Multiplication",
+      divide: "Division",
+      percentage: "Percentage",
+      power: "Power",
+      sqrt: "Square Root",
+      average: "Average",
+      ratio: "Ratio",
+      efficiency: "Efficiency",
+    };
+    const operationSymbols = {
+      add: "+",
+      subtract: "−",
+      multiply: "×",
+      divide: "÷",
+    };
+    const resultText = Number.isFinite(result) ? formatNumber(result) : "Undefined";
+    const expression = operationSymbols[op]
+      ? `${a} ${operationSymbols[op]} ${b}`
+      : operationLabels[op] || "Calculation";
+    const formulaText = formula || "Not supported by the current calculation engine";
+    const intermediateText = Number.isFinite(result)
+      ? `${a}${unitA ? ` ${unitA}` : ""} ${operationSymbols[op] || "→"} ${b}${unitB ? ` ${unitB}` : ""}`
+      : "Awaiting supported operation";
 
     if (calcSteps) {
       calcSteps.innerHTML = `
         <div class="calc-step">
           <span>1</span>
-          <p><strong>Inputs:</strong> A = ${a}, B = ${b}</p>
+          <p>Input A = ${a}${unitA ? ` ${escapeHtml(unitA)}` : ""}</p>
         </div>
         <div class="calc-step">
           <span>2</span>
-          <p><strong>Formula:</strong> ${escapeHtml(formula)}</p>
+          <p>Input B = ${b}${unitB ? ` ${escapeHtml(unitB)}` : ""}</p>
         </div>
         <div class="calc-step">
           <span>3</span>
-          <p><strong>Verification:</strong> Completed locally with deterministic arithmetic.</p>
+          <p>Operation = ${operationLabels[op] || "Unsupported operation"}</p>
+        </div>
+        <div class="calc-step">
+          <span>4</span>
+          <p>${Number.isFinite(result) ? escapeHtml(formula) : "No result returned for this operation."}</p>
         </div>
       `;
     }
 
     if (calcResult) {
-      calcResult.textContent = Number.isFinite(result) ? formatNumber(result) : "Undefined";
+      calcResult.textContent = resultText;
+    }
+
+    if (calcExpression) calcExpression.textContent = expression;
+    if (calcFormula) calcFormula.textContent = formulaText;
+    if (calcIntermediate) calcIntermediate.textContent = intermediateText;
+    if (calcFinal) calcFinal.textContent = resultText;
+
+    if (Number.isFinite(result) && recentCalculationsEl) {
+      recentCalculations.unshift(`${expression} = ${resultText}`);
+      recentCalculations.splice(4);
+      recentCalculationsEl.innerHTML = recentCalculations
+        .map((item) => `<p class="recent-calculation-item">${escapeHtml(item)}</p>`)
+        .join("");
     }
 
     showToast("Calculation completed");
   });
 }
+
+const calcType = document.getElementById("calcType");
+const engineeringFields = document.getElementById("engineeringFields");
+
+if (calcType && engineeringFields) {
+  calcType.addEventListener("change", () => {
+    engineeringFields.hidden = calcType.value !== "engineering";
+  });
+}
+
+document.querySelectorAll("[data-formula]").forEach((button) => {
+  button.addEventListener("click", () => {
+    if (calcType) calcType.value = "engineering";
+    if (engineeringFields) engineeringFields.hidden = false;
+    showToast(`${button.dataset.formula} selected as a UI template`);
+  });
+});
 
 /* ==========================================
    CODING WORKSPACE / SANDBOX TERMINAL
@@ -616,6 +802,42 @@ Security boundary: Isolated Sandbox
     }
 
     showToast("Sandbox script executed successfully");
+  });
+}
+
+const codeEditor = document.getElementById("codeEditor");
+const codeLineNumbers = document.getElementById("codeLineNumbers");
+const clearTerminal = document.getElementById("clearTerminal");
+const copyTerminal = document.getElementById("copyTerminal");
+const terminal = document.getElementById("terminal");
+
+function updateCodeLineNumbers() {
+  if (!codeEditor || !codeLineNumbers) return;
+
+  const lineCount = codeEditor.value.split("\n").length;
+  codeLineNumbers.textContent = Array.from(
+    { length: lineCount },
+    (_, index) => index + 1
+  ).join("\n");
+  codeLineNumbers.scrollTop = codeEditor.scrollTop;
+}
+
+if (codeEditor) {
+  codeEditor.addEventListener("input", updateCodeLineNumbers);
+  codeEditor.addEventListener("scroll", updateCodeLineNumbers);
+  updateCodeLineNumbers();
+}
+
+if (clearTerminal && terminal) {
+  clearTerminal.addEventListener("click", () => {
+    terminal.textContent = "Console cleared.";
+  });
+}
+
+if (copyTerminal && terminal) {
+  copyTerminal.addEventListener("click", () => {
+    navigator.clipboard?.writeText(terminal.textContent);
+    showToast("Console output copied");
   });
 }
 

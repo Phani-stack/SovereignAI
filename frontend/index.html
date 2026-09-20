@@ -7,14 +7,12 @@
       name="description"
       content="Sovereign AI Workbench - secure on-premise AI workspace UI"
     />
-    <title>Sovereign AI Workbench</title>
-
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
-      rel="stylesheet"
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; img-src 'self' blob: data:; style-src 'self' 'unsafe-inline'; connect-src 'self'"
     />
+    <!-- Backend integration: add the approved backend origin to connect-src above when USE_MOCK is disabled. -->
+    <title>Sovereign AI Workbench</title>
 
     <link rel="stylesheet" href="styles.css" />
   </head>
@@ -29,7 +27,7 @@
             aria-label="Open sidebar"
             title="Open sidebar"
           >
-            S
+            <img src="logo.png" alt="SOVAI logo" />
           </button>
 
           <div class="brand-copy">
@@ -90,10 +88,6 @@
             Sandbox
           </button>
 
-          <button class="nav-item" data-view="tools">
-            <span>⚙</span>
-            Local Tools
-          </button>
         </div>
 
         <div class="sidebar-section">
@@ -120,6 +114,7 @@
             <span class="settings-icon">⚙</span
             ><span class="settings-text">Settings</span>
           </button>
+
         </div>
       </aside>
 
@@ -129,16 +124,23 @@
         aria-label="Open sidebar"
         title="Open sidebar"
       >
-        S
+        <img src="logo.png" alt="SOVAI logo" />
       </button>
 
       <main class="main">
         <header class="topbar">
           <div class="topbar-left">
             <div>
-              <div class="eyebrow" id="contextLabel">SECURE WORKSPACE</div>
+              <div class="breadcrumb" id="contextLabel">
+                <span>SOVAI</span><span class="breadcrumb-separator">/</span><span id="breadcrumbPage">Dashboard</span>
+              </div>
 
               <h1 id="pageTitle">Dashboard</h1>
+            </div>
+
+            <div class="active-model" aria-label="Active local inference model">
+              <strong>Local model</strong>
+              <span class="active-model-state"><span class="status-dot"></span> Local</span>
             </div>
           </div>
 
@@ -174,7 +176,7 @@
               <div>
                 <span class="badge"> PRIVATE AI INFRASTRUCTURE </span>
 
-                <h2>Confidential work, powered locally.</h2>
+                <h2>Secure Intelligence, Running Entirely On-Premise.</h2>
 
                 <p>
                   Analyze documents, run secure local workflows and execute code
@@ -184,129 +186,120 @@
 
                 <div class="hero-actions">
                   <button class="primary-button" data-action="new-chat">
-                    Start AI Chat
+                    + New AI Task
                   </button>
 
                   <button class="secondary-button" data-action="upload">
-                    Upload Files
+                    Upload &amp; Analyze
                   </button>
+                </div>
+
+                <div class="hero-status" aria-label="Local inference status">
+                  <span><span class="status-dot"></span> Local inference active</span>
+                  <span><span class="status-dot"></span> External network blocked</span>
                 </div>
               </div>
 
               <div class="hero-visual">
                 <div class="orbit orbit-1"></div>
                 <div class="orbit orbit-2"></div>
-                <div class="core">S</div>
+                <div class="core"><img src="logo.png" alt="SOVAI logo" /></div>
               </div>
             </div>
 
             <div class="stats-grid">
-              <div class="stat-card">
+              <div class="stat-card" data-stat-key="localModels">
                 <span>Local Models</span>
                 <strong>03</strong>
                 <small>Ready for inference</small>
               </div>
 
-              <div class="stat-card">
-                <span>Knowledge Sources</span>
+              <div class="stat-card" data-stat-key="indexedDocuments">
+                <span>Indexed Documents</span>
                 <strong>128</strong>
                 <small>Private documents indexed</small>
               </div>
 
-              <div class="stat-card">
-                <span>Local Tools</span>
+              <div class="stat-card" data-stat-key="agentTools">
+                <span>Agent Tools</span>
                 <strong>07</strong>
                 <small>Controlled capabilities available</small>
               </div>
 
-              <div class="stat-card">
+              <div class="stat-card" data-stat-key="networkState">
                 <span>Network State</span>
                 <strong class="positive">Blocked</strong>
                 <small>External AI/API calls</small>
               </div>
             </div>
 
-            <div class="section-heading">
-              <div>
-                <h3>Core capabilities</h3>
+            <div class="dashboard-overview-grid">
+              <section class="overview-section" aria-labelledby="system-status-title">
+                <div class="section-heading">
+                  <div>
+                    <h3 id="system-status-title">System status</h3>
+                    <p>Local services available to this workspace</p>
+                  </div>
+                </div>
 
-                <p>
-                  Open the feature you need for your current engineering or
-                  business task.
-                </p>
-              </div>
-            </div>
+                <div class="status-list">
+                  <div class="status-row">
+                    <span class="status-dot"></span>
+                    <strong>Local AI Runtime</strong>
+                    <span class="status-value">Online</span>
+                  </div>
+                  <div class="status-row">
+                    <span class="status-dot"></span>
+                    <strong>Vector Database</strong>
+                    <span class="status-value">Online</span>
+                  </div>
+                  <div class="status-row">
+                    <span class="status-dot"></span>
+                    <strong>Vision/OCR Engine</strong>
+                    <span class="status-value">Ready</span>
+                  </div>
+                  <div class="status-row">
+                    <span class="status-dot blocked"></span>
+                    <strong>Network Isolation</strong>
+                    <span class="status-value">Blocked</span>
+                  </div>
+                </div>
+              </section>
 
-            <div class="feature-grid">
-              <button class="feature-card" data-view="chat">
-                <span class="feature-icon">◌</span>
-                <strong>AI Chat</strong>
-                <small>
-                  Ask questions using local models and private context.
-                </small>
-              </button>
+              <section class="overview-section" aria-labelledby="quick-actions-title">
+                <div class="section-heading">
+                  <div>
+                    <h3 id="quick-actions-title">Quick actions</h3>
+                    <p>Start work without leaving the overview</p>
+                  </div>
+                </div>
 
-              <button class="feature-card" data-view="files">
-                <span class="feature-icon">□</span>
-                <strong>Document Intelligence</strong>
-                <small>
-                  Process PDFs, Word, Excel, PPT, drawings and photos.
-                </small>
-              </button>
-
-              <button class="feature-card" data-view="multimodal">
-                <span class="feature-icon">◉</span>
-                <strong>OCR + Vision</strong>
-                <small>
-                  Read scanned pages, handwriting, layouts and images.
-                </small>
-              </button>
-
-              <button class="feature-card" data-view="knowledge">
-                <span class="feature-icon">◫</span>
-                <strong>Local RAG</strong>
-                <small>
-                  Search SOPs, manuals and internal knowledge with traceable
-                  sources.
-                </small>
-              </button>
-
-              <button class="feature-card" data-view="coding">
-                <span class="feature-icon">&lt;/&gt;</span>
-                <strong>Coding Workspace</strong>
-                <small>
-                  Generate, edit and validate code for internal tools.
-                </small>
-              </button>
-
-              <button class="feature-card" data-view="calculations">
-                <span class="feature-icon">∑</span>
-                <strong>Calculations</strong>
-                <small>
-                  Show formulas, steps, intermediate values and final results.
-                </small>
-              </button>
-
-              <button class="feature-card" data-view="security">
-                <span class="feature-icon">◆</span>
-                <strong>Security Center</strong>
-                <small>
-                  Monitor privacy, offline mode and external call blocking.
-                </small>
-              </button>
-
-              <button class="feature-card" data-view="audit">
-                <span class="feature-icon">≡</span>
-                <strong>Audit Logs</strong>
-                <small> Inspect agent, model and local tool activity. </small>
-              </button>
+                <div class="quick-actions-grid">
+                  <button class="quick-action" data-action="new-chat">
+                    <span class="quick-action-icon">+</span>
+                    <span>New AI Task</span>
+                  </button>
+                  <button class="quick-action" data-action="upload">
+                    <span class="quick-action-icon">⇧</span>
+                    <span>Upload &amp; Analyze</span>
+                  </button>
+                  <button class="quick-action" data-view="knowledge">
+                    <span class="quick-action-icon">⌕</span>
+                    <span>Search Knowledge</span>
+                  </button>
+                  <button class="quick-action" data-view="sandbox">
+                    <span class="quick-action-icon">&lt;/&gt;</span>
+                    <span>Run Secure Code</span>
+                  </button>
+                </div>
+              </section>
             </div>
 
             <div class="two-column">
               <div class="panel">
                 <div class="panel-header">
                   <div>
-                    <h3>Recent activity</h3>
+                    <h3>Recent work</h3>
                     <p>Local activity from the workbench</p>
                   </div>
 
@@ -318,34 +311,34 @@
                 <div class="activity-list">
                   <div class="activity-item">
                     <span class="activity-icon">✓</span>
-
                     <div>
                       <strong>Inspection report analyzed</strong>
                       <small>Vision + OCR · 4 min ago</small>
                     </div>
-
                     <span class="activity-state"> Done </span>
                   </div>
-
                   <div class="activity-item">
                     <span class="activity-icon">▤</span>
-
                     <div>
                       <strong>Approval note generated</strong>
                       <small>Document agent · 18 min ago</small>
                     </div>
-
                     <span class="activity-state"> Done </span>
                   </div>
-
+                  <div class="activity-item">
+                    <span class="activity-icon">⌕</span>
+                    <div>
+                      <strong>Pump/manual queried</strong>
+                      <small>Knowledge Base · 27 min ago</small>
+                    </div>
+                    <span class="activity-state"> Done </span>
+                  </div>
                   <div class="activity-item">
                     <span class="activity-icon"> &lt;/&gt; </span>
-
                     <div>
                       <strong>Internal utility tested</strong>
                       <small>Sandbox · 42 min ago</small>
                     </div>
-
                     <span class="activity-state"> Done </span>
                   </div>
                 </div>
@@ -362,27 +355,25 @@
                     <p>Private conversational workspace</p>
                   </div>
 
-                  <span class="mini-badge"> LOCAL </span>
+                  <span class="mini-badge chat-local-badge"><span class="status-dot"></span> LOCAL · Inference</span>
                 </div>
 
                 <div class="chat-area" id="chatArea">
-                  <div class="chat-message assistant">
-                    <strong>Sovereign AI</strong>
-
+                  <div class="chat-welcome">
+                    <div class="chat-welcome-mark"><img src="logo.png" alt="SOVAI logo" /></div>
+                    <strong>SOVAI</strong>
+                    <h2>How can I help with your private workspace?</h2>
                     <p>
-                      Hello. I am ready to work with your local files, knowledge
-                      base and approved tools.
+                      Ask questions, analyze documents, search your private knowledge base,
+                      or use approved local tools.
                     </p>
-                  </div>
 
-                  <div class="chat-suggestions">
-                    <button>Summarize the latest inspection report</button>
-
-                    <button>Explain this engineering drawing</button>
-
-                    <button>
-                      Create an approval note from the uploaded documents
-                    </button>
+                    <div class="chat-suggestions">
+                      <button>Summarize the latest inspection report</button>
+                      <button>Explain this engineering drawing</button>
+                      <button>Search the maintenance knowledge base</button>
+                      <button>Create an approval note from uploaded documents</button>
+                    </div>
                   </div>
                 </div>
 
@@ -392,15 +383,18 @@
                 </div>
 
                 <div class="chat-composer">
-                  <button class="icon-button" data-action="upload" title="Upload files" aria-label="Upload files">+</button>
+                  <div class="chat-composer-row">
+                    <button class="chat-attach-button" data-action="upload" title="Attach files" aria-label="Attach files">+</button>
 
-                  <textarea
-                    id="chatInput"
-                    rows="1"
-                    placeholder="Ask anything about your private workspace..."
-                  ></textarea>
+                    <textarea
+                      id="chatInput"
+                      rows="1"
+                      placeholder="Ask about your private workspace..."
+                    ></textarea>
 
-                  <button class="primary-button" id="sendChat">Send</button>
+                    <button class="primary-button chat-send-button" id="sendChat" aria-label="Send message" title="Send message">↗</button>
+                  </div>
+
                 </div>
               </div>
             </div>
@@ -578,24 +572,71 @@
                   Show inputs, formulas, intermediate steps and final results.
                 </p>
               </div>
-
-              <button class="primary-button" id="runCalc">
-                Run calculation
-              </button>
             </div>
 
             <div class="calc-grid">
               <div class="panel calc-form">
+                <div class="calc-panel-heading">
+                  <span class="eyebrow">INPUT WORKBENCH</span>
+                  <h3>Calculation input</h3>
+                </div>
+
+                <label>
+                  Calculation type
+                  <select id="calcType">
+                    <option value="basic">Basic Arithmetic</option>
+                    <option value="engineering">Engineering Formula</option>
+                  </select>
+                </label>
+
                 <label>
                   Input A
-
-                  <input id="calcA" type="number" value="120" />
+                  <div class="calc-input-with-unit">
+                    <input id="calcA" type="number" value="120" />
+                    <select id="calcUnitA" aria-label="Input A unit">
+                      <option value="">unit</option>
+                      <option>mm</option>
+                      <option>m</option>
+                      <option>kg</option>
+                      <option>Pa</option>
+                      <option>kPa</option>
+                      <option>bar</option>
+                      <option>psi</option>
+                      <option>°C</option>
+                      <option>°F</option>
+                      <option>W</option>
+                      <option>kW</option>
+                      <option>V</option>
+                      <option>A</option>
+                      <option>L/min</option>
+                      <option>m³/h</option>
+                    </select>
+                  </div>
                 </label>
 
                 <label>
                   Input B
-
-                  <input id="calcB" type="number" value="35" />
+                  <div class="calc-input-with-unit">
+                    <input id="calcB" type="number" value="35" />
+                    <select id="calcUnitB" aria-label="Input B unit">
+                      <option value="">unit</option>
+                      <option>mm</option>
+                      <option>m</option>
+                      <option>kg</option>
+                      <option>Pa</option>
+                      <option>kPa</option>
+                      <option>bar</option>
+                      <option>psi</option>
+                      <option>°C</option>
+                      <option>°F</option>
+                      <option>W</option>
+                      <option>kW</option>
+                      <option>V</option>
+                      <option>A</option>
+                      <option>L/min</option>
+                      <option>m³/h</option>
+                    </select>
+                  </div>
                 </label>
 
                 <label>
@@ -609,39 +650,95 @@
                     <option value="divide">Division</option>
 
                     <option value="subtract">Subtraction</option>
+
+                    <option value="percentage">Percentage</option>
+
+                    <option value="power">Power</option>
+
+                    <option value="sqrt">Square Root</option>
+
+                    <option value="average">Average</option>
+
+                    <option value="ratio">Ratio</option>
+
+                    <option value="efficiency">Efficiency</option>
                   </select>
                 </label>
+
+                <div class="engineering-formulas" id="engineeringFields" hidden>
+                  <span class="form-section-label">Formula templates</span>
+                  <button type="button" data-formula="Efficiency = Output / Input × 100">Efficiency <span>Output / Input × 100</span></button>
+                  <button type="button" data-formula="Pressure = Force / Area">Pressure <span>Force / Area</span></button>
+                  <button type="button" data-formula="Power = Voltage × Current">Power <span>Voltage × Current</span></button>
+                  <button type="button" data-formula="Flow Rate = Volume / Time">Flow Rate <span>Volume / Time</span></button>
+                </div>
+
+                <button class="primary-button calc-run-button" id="runCalc">
+                  Run calculation
+                </button>
               </div>
 
               <div class="panel calculation-output">
                 <div class="panel-header">
                   <div>
-                    <h3>Calculation steps</h3>
-                    <p>Transparent result generation</p>
+                    <span class="eyebrow">RESULTS</span>
+                    <h3>Calculation result</h3>
+                    <p>Transparent, deterministic arithmetic</p>
                   </div>
+                </div>
+
+                <div class="calc-result-display">
+                  <span id="calcExpression">120 + 35</span>
+                  <strong id="calcResult">—</strong>
                 </div>
 
                 <div id="calcSteps">
                   <div class="calc-step">
                     <span>1</span>
 
-                    <p>Enter two engineering values and select an operation.</p>
+                    <p>Input A = 120</p>
                   </div>
 
                   <div class="calc-step">
                     <span>2</span>
 
-                    <p>
-                      Click <strong>Run calculation</strong> to generate a
-                      step-by-step result.
-                    </p>
+                    <p>Input B = 35</p>
+                  </div>
+
+                  <div class="calc-step">
+                    <span>3</span>
+                    <p>Operation = Addition</p>
+                  </div>
+
+                  <div class="calc-step">
+                    <span>4</span>
+                    <p>Run the calculation to generate the final step.</p>
                   </div>
                 </div>
 
-                <div class="result-box">
-                  <small> Final result </small>
+                <div class="formula-transparency">
+                  <div>
+                    <span>Formula</span>
+                    <strong id="calcFormula">A + B</strong>
+                  </div>
+                  <div>
+                    <span>Intermediate values</span>
+                    <strong id="calcIntermediate">120 + 35</strong>
+                  </div>
+                  <div>
+                    <span>Final result</span>
+                    <strong id="calcFinal">—</strong>
+                  </div>
+                </div>
 
-                  <strong id="calcResult"> — </strong>
+                <div class="recent-calculations">
+                  <div class="recent-calculations-heading">
+                    <strong>Recent calculations</strong>
+                    <span>Current session</span>
+                  </div>
+                  <div id="recentCalculations">
+                    <p class="recent-empty">No completed calculations yet.</p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -649,42 +746,69 @@
 
           <section class="view" id="view-coding">
             <div class="workspace-layout single">
-              <div class="workspace-main panel">
-                <div class="panel-header">
+              <div class="workspace-main panel coding-ide">
+                <div class="panel-header coding-ide-header">
                   <div>
                     <h3>Coding Workspace</h3>
 
                     <p>Generate and work with code for internal tools</p>
                   </div>
 
-                  <span class="mini-badge"> SANDBOX READY </span>
+                  <span class="mini-badge sandbox-badge"><span class="status-dot"></span> SANDBOX READY </span>
                 </div>
 
-                <div class="editor-toolbar">
-                  <button class="secondary-button" id="runCode">Run</button>
+                <div class="coding-ide-grid">
+                  <section class="editor-pane" aria-label="Python code editor">
+                    <div class="editor-toolbar">
+                      <div class="editor-file">
+                        <span class="language-badge">PY</span>
+                        <strong>main.py</strong>
+                        <span class="editor-save-state">Ready</span>
+                      </div>
 
-                  <button class="secondary-button">Format</button>
+                      <div class="editor-actions">
+                        <span class="editor-language">Python</span>
+                        <button class="secondary-button" id="runCode">Run</button>
+                        <button class="secondary-button" type="button">Format</button>
+                        <button class="secondary-button" type="button">Save</button>
+                      </div>
+                    </div>
 
-                  <button class="secondary-button">Save</button>
-                </div>
-
-                <textarea
-                  class="code-editor"
-                  id="codeEditor"
-                  spellcheck="false"
-                >
+                    <div class="code-editor-shell">
+                      <div class="code-line-numbers" id="codeLineNumbers" aria-hidden="true"></div>
+                      <textarea
+                        class="code-editor"
+                        id="codeEditor"
+                        spellcheck="false"
+                        aria-label="main.py editor"
+                      >
 def calculate_efficiency(output_value, input_value):
     if input_value == 0:
         raise ValueError("Input value cannot be zero")
     return (output_value / input_value) * 100
 
-print(calculate_efficiency(85, 100))</textarea
-                >
+print(calculate_efficiency(85, 100))</textarea>
+                    </div>
+                  </section>
 
-                <pre class="terminal" id="terminal">
+                  <section class="console-pane" aria-label="Code execution console">
+                    <div class="console-header">
+                      <div>
+                        <strong>Console</strong>
+                        <span class="console-state"><span class="status-dot"></span> Ready</span>
+                      </div>
+                      <div class="console-actions">
+                        <button type="button" id="clearTerminal">Clear</button>
+                        <button type="button" id="copyTerminal">Copy</button>
+                      </div>
+                    </div>
+
+                    <pre class="terminal" id="terminal">
 Sandbox terminal ready.
-Click "Run" to execute locally in your connected backend.</pre
-                >
+Click "Run" to execute locally in your connected backend.</pre>
+                  </section>
+                </div>
+
               </div>
             </div>
           </section>
@@ -717,46 +841,24 @@ Click "Run" to execute locally in your connected backend.</pre
                 </button>
               </div>
 
-              <div id="visionPreviewArea" class="vision-preview-area" style="display: none;"></div>
-
-              <div class="panel">
+              <div class="panel vision-analysis-panel" id="visionAnalysisPanel" style="display: none;">
                 <div class="panel-header">
                   <div>
-                    <h3>Analysis capabilities</h3>
-                    <p>Available for the uploaded material</p>
+                    <h3>Analysis status</h3>
+                    <p>Local processing pipeline</p>
                   </div>
                 </div>
 
-                <div class="capability-list">
-                  <div>
-                    <span>✓</span>
-                    <strong>OCR</strong>
-                    <small> Extract text from scanned pages. </small>
-                  </div>
-
-                  <div>
-                    <span>✓</span>
-                    <strong>Handwriting</strong>
-                    <small> Interpret handwritten notes where legible. </small>
-                  </div>
-
-                  <div>
-                    <span>✓</span>
-                    <strong>Engineering drawings</strong>
-                    <small>
-                      Understand visual symbols, labels and layout.
-                    </small>
-                  </div>
-
-                  <div>
-                    <span>✓</span>
-                    <strong>Source traceability</strong>
-                    <small>
-                      Link extracted information to document pages.
-                    </small>
+                <div class="analysis-status-list" id="visionAnalysisList">
+                  <div class="analysis-status-row is-idle">
+                    <span class="analysis-status-icon">•</span>
+                    <strong>Waiting for image</strong>
+                    <small>Choose a file to begin local analysis.</small>
                   </div>
                 </div>
               </div>
+
+              <div id="visionPreviewArea" class="vision-preview-area" style="display: none;"></div>
             </div>
           </section>
 
@@ -1088,6 +1190,6 @@ Click "Run" to execute locally in your connected backend.</pre
     />
     <div class="toast" id="toast"></div>
 
-    <script src="app.js"></script>
+    <script type="module" src="app.js?v=20260920"></script>
   </body>
 </html>
