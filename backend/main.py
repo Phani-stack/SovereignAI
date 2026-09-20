@@ -33,8 +33,12 @@ async def health():
     return {"status": "ok"}
 
 
+FRONTEND_DIR = Path(__file__).resolve().parents[1] / "frontend"
 UI_DIR = Path(__file__).resolve().parents[1] / "ui"
-if UI_DIR.exists():
+
+if FRONTEND_DIR.exists():
+    app.mount("/", StaticFiles(directory=str(FRONTEND_DIR), html=True), name="frontend")
+elif UI_DIR.exists():
     app.mount("/", StaticFiles(directory=str(UI_DIR), html=True), name="ui")
 
 # touch at 1788103294.606627
