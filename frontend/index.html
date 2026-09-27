@@ -1,1209 +1,1409 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta
-      name="description"
-      content="Sovereign AI Workbench - secure on-premise AI workspace UI"
-    />
-    <meta
-      http-equiv="Content-Security-Policy"
-      content="default-src 'self'; img-src 'self' blob: data:; style-src 'self' 'unsafe-inline'; connect-src 'self'"
-    />
-    <!-- Backend integration: add the approved backend origin to connect-src above when USE_MOCK is disabled. -->
-    <title>Sovereign AI Workbench</title>
 
-    <link rel="stylesheet" href="styles.css" />
-  </head>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Sovereign AI Workbench - secure on-premise AI workspace UI" />
+  <meta http-equiv="Content-Security-Policy"
+    content="default-src 'self' https://cdn.jsdelivr.net; img-src 'self' blob: data:; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; connect-src 'self'" />
+  <!-- Backend integration: add the approved backend origin to connect-src above when USE_MOCK is disabled. -->
+  <title>Sovereign AI Workbench</title>
 
-  <body>
-    <div class="app-shell">
-      <aside class="sidebar" id="sidebar">
-        <div class="brand">
-          <button
-            class="brand-mark"
-            id="sidebarLogo"
-            aria-label="Open sidebar"
-            title="Open sidebar"
-          >
-            <img src="logo.png" alt="SOVAI logo" />
-          </button>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" crossorigin="anonymous" />
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+    crossorigin="anonymous"></script>
 
-          <div class="brand-copy">
-            <div class="brand-title">SOVAI</div>
-            <div class="brand-subtitle">On-Premise Workbench</div>
-          </div>
+</head>
 
-          <button
-            class="sidebar-collapse"
-            id="sidebarCollapse"
-            aria-label="Collapse sidebar"
-            title="Collapse sidebar"
-          >
-            ‹
-          </button>
-        </div>
-
-        <div class="sidebar-section">
-          <div class="section-label">Workspace</div>
-
-          <button class="nav-item active" data-view="dashboard">
-            <span>⌂</span>
-            Dashboard
-          </button>
-
-          <button class="nav-item" data-view="chat">
-            <span>◌</span>
-            AI Chat
-          </button>
-
-          <button class="nav-item" data-view="multimodal">
-            <span>◉</span>
-            Vision & OCR
-          </button>
-
-          <button class="nav-item" data-view="files">
-            <span>□</span>
-            Files & Documents
-          </button>
-
-          <button class="nav-item" data-view="knowledge">
-            <span>◫</span>
-            Knowledge Base
-          </button>
-
-          <button class="nav-item" data-view="calculations">
-            <span>∑</span>
-            Calculations
-          </button>
-
-          <button class="nav-item" data-view="coding">
-            <span>&lt;/&gt;</span>
-            Coding
-          </button>
-
-          <button class="nav-item" data-view="sandbox">
-            <span>▣</span>
-            Sandbox
-          </button>
-
-        </div>
-
-        <div class="sidebar-section">
-          <div class="section-label">Security</div>
-
-          <button class="nav-item" data-view="security">
-            <span>◆</span>
-            Security Center
-          </button>
-
-          <button class="nav-item" data-view="audit">
-            <span>≡</span>
-            Audit Logs
-          </button>
-        </div>
-
-        <div class="sidebar-footer">
-          <button
-            class="settings-link"
-            data-view="settings"
-            aria-label="Open settings"
-            title="Open settings"
-          >
-            <span class="settings-icon">⚙</span
-            ><span class="settings-text">Settings</span>
-          </button>
-
-        </div>
-      </aside>
-
-      <button
-        class="mobile-logo-trigger"
-        id="mobileLogoTrigger"
-        aria-label="Open sidebar"
-        title="Open sidebar"
-      >
-        <img src="logo.png" alt="SOVAI logo" />
-      </button>
-
-      <main class="main">
-        <header class="topbar">
-          <div class="topbar-left">
-            <div>
-              <div class="breadcrumb" id="contextLabel">
-                <span>SOVAI</span><span class="breadcrumb-separator">/</span><span id="breadcrumbPage">Dashboard</span>
-              </div>
-
-              <h1 id="pageTitle">Dashboard</h1>
+<body>
+  <div class="app-shell">
+    <main class="main">
+      <!-- Top App Header -->
+      <!-- Top App Header -->
+      <header class="topbar">
+        <div class="topbar-left">
+          <div class="brand-container">
+            <div class="brand-mark" id="sidebarLogo" title="Sovereign AI Workbench">
+              <img src="logo.png" alt="SOVAI logo" />
             </div>
-
-            <div class="active-model" aria-label="Active local inference model">
-              <label for="modelSelector" style="font-weight:700; font-size:11px; color:var(--muted); margin-right:4px;">Model:</label>
-              <select id="modelSelector" style="background:var(--surface); color:var(--text); border:1px solid var(--border); border-radius:6px; padding:3px 6px; font-size:11px; font-weight:700; cursor:pointer;">
-                <option value="auto">Auto Select</option>
-                <option value="qwen3">Qwen3:4B - Chat / RAG</option>
-                <option value="coder">Qwen2.5-Coder:3B - Coding</option>
-                <option value="engineering">Qwen3:4B - Calculations</option>
-                <option value="vision">Qwen2.5-VL:3B - Vision / OCR</option>
-              </select>
-              <span class="active-model-state"><span class="status-dot"></span> Local</span>
+            <div class="brand-copy">
+              <div class="brand-title">SOVAI</div>
+              <div class="brand-subtitle">On-Premise</div>
             </div>
           </div>
+        </div>
 
-          <div class="topbar-actions">
-            <button
-              class="icon-button right-menu-button"
-              id="rightMenuButton"
-              aria-label="Open workspace panel"
-              title="Open workspace panel"
-            >
-              ☰
+        <div class="topbar-actions">
+          <div class="active-model-pill" aria-label="Active local inference model">
+            <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              style="width:13px; height:13px; color:var(--accent);">
+              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+            </svg>
+            <select id="modelSelector">
+              <option value="auto">Auto Select</option>
+              <option value="qwen3">Qwen3:4B - Chat / RAG</option>
+              <option value="coder">Qwen2.5-Coder:3B - Coding</option>
+              <option value="engineering">Qwen3:4B - Calculations</option>
+              <option value="vision">Qwen2.5-VL:3B - Vision / OCR</option>
+            </select>
+            <span class="active-model-state"><span class="status-dot"></span> Local</span>
+          </div>
+
+          <div class="theme-control">
+            <button class="theme-button" id="themeButton">
+              <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                style="width:14px; height:14px;">
+                <circle cx="12" cy="12" r="5" />
+                <line x1="12" y1="1" x2="12" y2="3" />
+                <line x1="12" y1="21" x2="12" y2="23" />
+                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+                <line x1="1" y1="12" x2="3" y2="12" />
+                <line x1="21" y1="12" x2="23" y2="12" />
+                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+              </svg>
+              Theme
             </button>
-
-            <div class="theme-control">
-              <button class="theme-button" id="themeButton">☀ Theme</button>
-
-              <div class="theme-menu" id="themeMenu">
-                <button data-theme-choice="light">☀ Light</button>
-
-                <button data-theme-choice="dark">☾ Dark</button>
-
-                <button data-theme-choice="system">◐ System</button>
-              </div>
+            <div class="theme-menu" id="themeMenu">
+              <button data-theme-choice="light">Light</button>
+              <button data-theme-choice="dark">Dark</button>
+              <button data-theme-choice="system">System</button>
             </div>
-
-            <div class="avatar">SK</div>
           </div>
-        </header>
 
-        <div class="content">
-          <section class="view active" id="view-dashboard">
-            <div class="hero">
-              <div>
-                <span class="badge"> PRIVATE AI INFRASTRUCTURE </span>
-
-                <h2>Secure Intelligence, Running Entirely On-Premise.</h2>
-
-                <p>
-                  Analyze documents, run secure local workflows and execute code
-                  without sending sensitive work outside your controlled
-                  environment.
-                </p>
-
-                <div class="hero-actions">
-                  <button class="primary-button" data-action="new-chat">
-                    + New AI Task
-                  </button>
-
-                  <button class="secondary-button" data-action="upload">
-                    Upload &amp; Analyze
-                  </button>
-                </div>
-
-                <div class="hero-status" aria-label="Local inference status">
-                  <span><span class="status-dot"></span> Local inference active</span>
-                  <span><span class="status-dot"></span> External network blocked</span>
-                </div>
-              </div>
-
-              <div class="hero-visual">
-                <div class="orbit orbit-1"></div>
-                <div class="orbit orbit-2"></div>
-                <div class="core"><img src="logo.png" alt="SOVAI logo" /></div>
-              </div>
+          <!-- User Profile & Auth Pill -->
+          <div class="user-profile-pill" id="userProfilePill">
+            <div class="avatar" id="userAvatar">AD</div>
+            <div class="user-info">
+              <span id="headerUsername">admin</span>
+              <span id="headerUserRole">ADMINISTRATOR</span>
             </div>
+            <button type="button" id="logoutButton" title="Logout" aria-label="Logout">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                <polyline points="16 17 21 12 16 7" />
+                <line x1="21" y1="12" x2="9" y2="12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </header>
 
-            <div class="stats-grid">
-              <div class="stat-card" data-stat-key="localModels">
-                <span>Local Models</span>
-                <strong>03</strong>
-                <small>Ready for inference</small>
-              </div>
+      <!-- Chrome-Style Tab Bar Navigation -->
+      <nav class="chrome-tabbar" aria-label="Workbench tabs">
+        <div class="chrome-tab-container">
+          <button class="chrome-tab active nav-item" data-view="dashboard">
+            <svg class="tab-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="7" height="9" rx="1" />
+              <rect x="14" y="3" width="7" height="5" rx="1" />
+              <rect x="14" y="12" width="7" height="9" rx="1" />
+              <rect x="3" y="16" width="7" height="5" rx="1" />
+            </svg>
+            <span>Dashboard</span>
+          </button>
 
-              <div class="stat-card" data-stat-key="indexedDocuments">
-                <span>Indexed Documents</span>
-                <strong>128</strong>
-                <small>Private documents indexed</small>
-              </div>
+          <button class="chrome-tab nav-item" data-view="chat">
+            <svg class="tab-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+            </svg>
+            <span>AI Chat</span>
+          </button>
 
-              <div class="stat-card" data-stat-key="agentTools">
-                <span>Agent Tools</span>
-                <strong>07</strong>
-                <small>Controlled capabilities available</small>
-              </div>
+          <button class="chrome-tab nav-item" data-view="multimodal">
+            <svg class="tab-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z" />
+              <circle cx="12" cy="12" r="3" />
+            </svg>
+            <span>Vision &amp; OCR</span>
+          </button>
 
-              <div class="stat-card" data-stat-key="networkState">
-                <span>Network State</span>
-                <strong class="positive">Blocked</strong>
-                <small>External AI/API calls</small>
-              </div>
-            </div>
+          <button class="chrome-tab nav-item" data-view="files">
+            <svg class="tab-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+            </svg>
+            <span>Files &amp; Docs</span>
+          </button>
 
-            <div class="dashboard-overview-grid">
-              <section class="overview-section" aria-labelledby="system-status-title">
-                <div class="section-heading">
-                  <div>
-                    <h3 id="system-status-title">System status</h3>
-                    <p>Local services available to this workspace</p>
-                  </div>
-                </div>
+          <button class="chrome-tab nav-item" data-view="knowledge">
+            <svg class="tab-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <ellipse cx="12" cy="5" rx="9" ry="3" />
+              <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" />
+              <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
+            </svg>
+            <span>Knowledge Base</span>
+          </button>
 
-                <div class="status-list">
-                  <div class="status-row">
-                    <span class="status-dot"></span>
-                    <strong>Local AI Runtime</strong>
-                    <span class="status-value">Online</span>
-                  </div>
-                  <div class="status-row">
-                    <span class="status-dot"></span>
-                    <strong>Vector Database</strong>
-                    <span class="status-value">Online</span>
-                  </div>
-                  <div class="status-row">
-                    <span class="status-dot"></span>
-                    <strong>Vision/OCR Engine</strong>
-                    <span class="status-value">Ready</span>
-                  </div>
-                  <div class="status-row">
-                    <span class="status-dot blocked"></span>
-                    <strong>Network Isolation</strong>
-                    <span class="status-value">Blocked</span>
-                  </div>
-                </div>
-              </section>
+          <button class="chrome-tab nav-item" data-view="calculations">
+            <svg class="tab-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="4" y="2" width="16" height="20" rx="2" />
+              <line x1="8" y1="6" x2="16" y2="6" />
+              <line x1="16" y1="14" x2="16" y2="18" />
+              <path d="M16 10h.01" />
+              <path d="M12 10h.01" />
+              <path d="M8 10h.01" />
+              <path d="M12 14h.01" />
+              <path d="M8 14h.01" />
+              <path d="M12 18h.01" />
+              <path d="M8 18h.01" />
+            </svg>
+            <span>Calculations</span>
+          </button>
 
-              <section class="overview-section" aria-labelledby="quick-actions-title">
-                <div class="section-heading">
-                  <div>
-                    <h3 id="quick-actions-title">Quick actions</h3>
-                    <p>Start work without leaving the overview</p>
-                  </div>
-                </div>
+          <button class="chrome-tab nav-item" data-view="coding">
+            <svg class="tab-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="16 18 22 12 16 6" />
+              <polyline points="8 6 2 12 8 18" />
+            </svg>
+            <span>Coding</span>
+          </button>
 
-                <div class="quick-actions-grid">
-                  <button class="quick-action" data-action="new-chat">
-                    <span class="quick-action-icon">+</span>
-                    <span>New AI Task</span>
-                  </button>
-                  <button class="quick-action" data-action="upload">
-                    <span class="quick-action-icon">⇧</span>
-                    <span>Upload &amp; Analyze</span>
-                  </button>
-                  <button class="quick-action" data-view="knowledge">
-                    <span class="quick-action-icon">⌕</span>
-                    <span>Search Knowledge</span>
-                  </button>
-                  <button class="quick-action" data-view="sandbox">
-                    <span class="quick-action-icon">&lt;/&gt;</span>
-                    <span>Run Secure Code</span>
-                  </button>
-                </div>
-              </section>
-            </div>
+          <button class="chrome-tab nav-item" data-view="sandbox">
+            <svg class="tab-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path
+                d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+              <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+              <line x1="12" y1="22.08" x2="12" y2="12" />
+            </svg>
+            <span>Sandbox</span>
+          </button>
 
-            <div class="two-column">
-              <div class="panel">
-                <div class="panel-header">
-                  <div>
-                    <h3>Recent work</h3>
-                    <p>Local activity from the workbench</p>
-                  </div>
+          <button class="chrome-tab nav-item" data-view="tools">
+            <svg class="tab-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path
+                d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+            </svg>
+            <span>Local Tools</span>
+          </button>
 
-                  <button class="text-button" data-view="audit">
-                    View logs
-                  </button>
-                </div>
+          <button class="chrome-tab nav-item" data-view="security">
+            <svg class="tab-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            </svg>
+            <span>Security</span>
+          </button>
 
-                <div class="activity-list">
-                  <div class="activity-item">
-                    <span class="activity-icon">✓</span>
-                    <div>
-                      <strong>Inspection report analyzed</strong>
-                      <small>Vision + OCR · 4 min ago</small>
-                    </div>
-                    <span class="activity-state"> Done </span>
-                  </div>
-                  <div class="activity-item">
-                    <span class="activity-icon">▤</span>
-                    <div>
-                      <strong>Approval note generated</strong>
-                      <small>Document agent · 18 min ago</small>
-                    </div>
-                    <span class="activity-state"> Done </span>
-                  </div>
-                  <div class="activity-item">
-                    <span class="activity-icon">⌕</span>
-                    <div>
-                      <strong>Pump/manual queried</strong>
-                      <small>Knowledge Base · 27 min ago</small>
-                    </div>
-                    <span class="activity-state"> Done </span>
-                  </div>
-                  <div class="activity-item">
-                    <span class="activity-icon"> &lt;/&gt; </span>
-                    <div>
-                      <strong>Internal utility tested</strong>
-                      <small>Sandbox · 42 min ago</small>
-                    </div>
-                    <span class="activity-state"> Done </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </section>
+          <button class="chrome-tab nav-item" data-view="audit">
+            <svg class="tab-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+              <polyline points="14 2 14 8 20 8" />
+              <line x1="16" y1="13" x2="8" y2="13" />
+              <line x1="16" y1="17" x2="8" y2="17" />
+              <polyline points="10 9 9 9 8 9" />
+            </svg>
+            <span>Audit Logs</span>
+          </button>
 
-          <section class="view" id="view-chat">
-            <div class="workspace-layout single">
-              <div class="workspace-main panel">
-                <div class="panel-header">
-                  <div>
-                    <h3>AI Chat</h3>
-                    <p>Private conversational workspace</p>
-                  </div>
+          <button class="chrome-tab nav-item" data-view="settings">
+            <svg class="tab-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="3" />
+              <path
+                d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+            </svg>
+            <span>Settings</span>
+          </button>
 
-                  <span class="mini-badge chat-local-badge"><span class="status-dot"></span> LOCAL · Inference</span>
-                </div>
+          <button class="chrome-tab nav-item admin-tab" id="navAdminTab" data-view="admin">
+            <svg class="tab-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+              <circle cx="9" cy="7" r="4" />
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+              <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+            </svg>
+            <span>Administration</span>
+          </button>
+        </div>
+      </nav>
 
-                <div class="chat-area" id="chatArea">
-                  <div class="chat-welcome">
-                    <div class="chat-welcome-mark"><img src="logo.png" alt="SOVAI logo" /></div>
-                    <strong>SOVAI</strong>
-                    <h2>How can I help with your private workspace?</h2>
-                    <p>
-                      Ask questions, analyze documents, search your private knowledge base,
-                      or use approved local tools.
-                    </p>
 
-                    <div class="chat-suggestions">
-                      <button>Summarize the latest inspection report</button>
-                      <button>Explain this engineering drawing</button>
-                      <button>Search the maintenance knowledge base</button>
-                      <button>Create an approval note from uploaded documents</button>
-                    </div>
-                  </div>
-                </div>
+      <div class="content">
+        <section class="view active" id="view-dashboard">
+          <div class="hero">
+            <div>
+              <span class="badge"> PRIVATE AI INFRASTRUCTURE </span>
 
-                <div class="chat-attachments-bar" id="chatAttachmentsBar" style="display: none;">
-                  <span class="attachments-label">Attachments:</span>
-                  <div class="chat-attachments-list" id="chatAttachmentsList"></div>
-                </div>
-
-                <div class="chat-composer">
-                  <div class="chat-composer-row">
-                    <button class="chat-attach-button" data-action="upload" title="Attach files" aria-label="Attach files">+</button>
-
-                    <textarea
-                      id="chatInput"
-                      rows="1"
-                      placeholder="Ask about your private workspace..."
-                    ></textarea>
-
-                    <button class="primary-button chat-send-button" id="sendChat" aria-label="Send message" title="Send message">↗</button>
-                  </div>
-
-                </div>
-              </div>
-            </div>
-          </section>
-
-          <section class="view" id="view-files">
-            <div class="section-heading">
-              <div>
-                <h3>Files & Documents</h3>
-
-                <p>
-                  Upload and analyze confidential engineering and business
-                  material.
-                </p>
-              </div>
-
-              <button class="primary-button" data-action="upload">
-                Upload files
-              </button>
-            </div>
-
-            <div class="upload-zone" id="dropZone">
-              <div class="upload-icon">⇧</div>
-
-              <h3>Drop files here</h3>
+              <h2>Secure Intelligence, Running Entirely On-Premise.</h2>
 
               <p>
-                PDF, DOCX, XLSX, PPTX, images, scanned drawings and text files
+                Analyze documents, run secure local workflows and execute code
+                without sending sensitive work outside your controlled
+                environment.
               </p>
 
-              <button class="secondary-button" data-action="upload">
-                Browse files
-              </button>
-            </div>
+              <div class="hero-actions">
+                <button class="primary-button" data-action="new-chat">
+                  + New AI Task
+                </button>
 
-            <div class="table-panel panel">
-              <div class="panel-header">
-                <div>
-                  <h3>Recent documents</h3>
-                  <p>Files currently available to the workspace</p>
-                </div>
-              </div>
-
-              <div class="file-table" id="fileTable">
-                <div class="file-row head">
-                  <span>Name</span>
-                  <span>Type</span>
-                  <span>Source</span>
-                  <span>Status</span>
-                </div>
-
-                <div class="file-row">
-                  <strong>Inspection_Report_07.pdf</strong>
-                  <span>PDF</span>
-                  <span>Local upload</span>
-                  <span class="tag green">Indexed</span>
-                </div>
-
-                <div class="file-row">
-                  <strong>Plant_Approval_Note.docx</strong>
-                  <span>Word</span>
-                  <span>Local upload</span>
-                  <span class="tag green">Ready</span>
-                </div>
-
-                <div class="file-row">
-                  <strong>P_ID_Unit_4.png</strong>
-                  <span>Image</span>
-                  <span>Local upload</span>
-                  <span class="tag blue">OCR pending</span>
-                </div>
-
-                <div class="file-row">
-                  <strong>Vendor_Quote.xlsx</strong>
-                  <span>Excel</span>
-                  <span>Local upload</span>
-                  <span class="tag green">Indexed</span>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          <section class="view" id="view-knowledge">
-            <div class="section-heading">
-              <div>
-                <h3>Local Knowledge Base / RAG</h3>
-
-                <p>
-                  Search private manuals, SOPs, approval notes and
-                  organizational knowledge.
-                </p>
-              </div>
-            </div>
-
-            <div class="search-panel panel">
-              <div class="search-box">
-                <span>⌕</span>
-
-                <input
-                  id="ragSearch"
-                  placeholder="Search your private knowledge base..."
-                />
-
-                <button class="primary-button" id="ragButton">Search</button>
-              </div>
-            </div>
-
-            <div class="rag-results">
-              <article class="rag-card">
-                <div class="result-number">01</div>
-
-                <div>
-                  <h4>Equipment Approval Procedure</h4>
-
-                  <p>
-                    Approval requires design review, inspection evidence and
-                    authorized sign-off before equipment release.
-                  </p>
-
-                  <div class="source">
-                    <span> Source: Approval_Procedure_SOP.pdf </span>
-
-                    <span> Page 12 </span>
-                  </div>
-                </div>
-              </article>
-
-              <article class="rag-card">
-                <div class="result-number">02</div>
-
-                <div>
-                  <h4>Inspection Reporting Standard</h4>
-
-                  <p>
-                    Inspection reports should include findings, evidence images,
-                    responsible reviewer and corrective actions.
-                  </p>
-
-                  <div class="source">
-                    <span> Source: Inspection_Manual.docx </span>
-
-                    <span> Page 34 </span>
-                  </div>
-                </div>
-              </article>
-
-              <article class="rag-card">
-                <div class="result-number">03</div>
-
-                <div>
-                  <h4>Vendor Negotiation Guidelines</h4>
-
-                  <p>
-                    Commercial comparisons should document quoted prices,
-                    technical deviations, delivery impact and negotiation
-                    history.
-                  </p>
-
-                  <div class="source">
-                    <span> Source: Vendor_Guidelines.pdf </span>
-
-                    <span> Page 8 </span>
-                  </div>
-                </div>
-              </article>
-            </div>
-          </section>
-
-          <section class="view" id="view-calculations">
-            <div class="section-heading">
-              <div>
-                <h3>Engineering Calculations</h3>
-
-                <p>
-                  Show inputs, formulas, intermediate steps and final results.
-                </p>
-              </div>
-            </div>
-
-            <div class="calc-grid">
-              <div class="panel calc-form">
-                <div class="calc-panel-heading">
-                  <span class="eyebrow">INPUT WORKBENCH</span>
-                  <h3>Calculation input</h3>
-                </div>
-
-                <label>
-                  Calculation type
-                  <select id="calcType">
-                    <option value="basic">Basic Arithmetic</option>
-                    <option value="engineering">Engineering Formula</option>
-                  </select>
-                </label>
-
-                <label>
-                  Input A
-                  <div class="calc-input-with-unit">
-                    <input id="calcA" type="number" value="120" />
-                    <select id="calcUnitA" aria-label="Input A unit">
-                      <option value="">unit</option>
-                      <option>mm</option>
-                      <option>m</option>
-                      <option>kg</option>
-                      <option>Pa</option>
-                      <option>kPa</option>
-                      <option>bar</option>
-                      <option>psi</option>
-                      <option>°C</option>
-                      <option>°F</option>
-                      <option>W</option>
-                      <option>kW</option>
-                      <option>V</option>
-                      <option>A</option>
-                      <option>L/min</option>
-                      <option>m³/h</option>
-                    </select>
-                  </div>
-                </label>
-
-                <label>
-                  Input B
-                  <div class="calc-input-with-unit">
-                    <input id="calcB" type="number" value="35" />
-                    <select id="calcUnitB" aria-label="Input B unit">
-                      <option value="">unit</option>
-                      <option>mm</option>
-                      <option>m</option>
-                      <option>kg</option>
-                      <option>Pa</option>
-                      <option>kPa</option>
-                      <option>bar</option>
-                      <option>psi</option>
-                      <option>°C</option>
-                      <option>°F</option>
-                      <option>W</option>
-                      <option>kW</option>
-                      <option>V</option>
-                      <option>A</option>
-                      <option>L/min</option>
-                      <option>m³/h</option>
-                    </select>
-                  </div>
-                </label>
-
-                <label>
-                  Operation
-
-                  <select id="calcOp">
-                    <option value="add">Addition</option>
-
-                    <option value="multiply">Multiplication</option>
-
-                    <option value="divide">Division</option>
-
-                    <option value="subtract">Subtraction</option>
-
-                    <option value="percentage">Percentage</option>
-
-                    <option value="power">Power</option>
-
-                    <option value="sqrt">Square Root</option>
-
-                    <option value="average">Average</option>
-
-                    <option value="ratio">Ratio</option>
-
-                    <option value="efficiency">Efficiency</option>
-                  </select>
-                </label>
-
-                <div class="engineering-formulas" id="engineeringFields" hidden>
-                  <span class="form-section-label">Formula templates</span>
-                  <button type="button" data-formula="Efficiency = Output / Input × 100">Efficiency <span>Output / Input × 100</span></button>
-                  <button type="button" data-formula="Pressure = Force / Area">Pressure <span>Force / Area</span></button>
-                  <button type="button" data-formula="Power = Voltage × Current">Power <span>Voltage × Current</span></button>
-                  <button type="button" data-formula="Flow Rate = Volume / Time">Flow Rate <span>Volume / Time</span></button>
-                </div>
-
-                <button class="primary-button calc-run-button" id="runCalc">
-                  Run calculation
+                <button class="secondary-button" data-action="upload">
+                  Upload &amp; Analyze
                 </button>
               </div>
 
-              <div class="panel calculation-output">
-                <div class="panel-header">
-                  <div>
-                    <span class="eyebrow">RESULTS</span>
-                    <h3>Calculation result</h3>
-                    <p>Transparent, deterministic arithmetic</p>
-                  </div>
+              <div class="hero-status" aria-label="Local inference status">
+                <span><span class="status-dot"></span> Local inference active</span>
+                <span><span class="status-dot"></span> External network blocked</span>
+              </div>
+            </div>
+
+            <div class="hero-visual">
+              <div class="orbit orbit-1"></div>
+              <div class="orbit orbit-2"></div>
+              <div class="core"><img src="logo.png" alt="SOVAI logo" /></div>
+            </div>
+          </div>
+
+          <div class="stats-grid">
+            <div class="stat-card" data-stat-key="localModels">
+              <span>Local Models</span>
+              <strong>03</strong>
+              <small>Ready for inference</small>
+            </div>
+
+            <div class="stat-card" data-stat-key="indexedDocuments">
+              <span>Indexed Documents</span>
+              <strong>128</strong>
+              <small>Private documents indexed</small>
+            </div>
+
+            <div class="stat-card" data-stat-key="agentTools">
+              <span>Agent Tools</span>
+              <strong>07</strong>
+              <small>Controlled capabilities available</small>
+            </div>
+
+            <div class="stat-card" data-stat-key="networkState">
+              <span>Network State</span>
+              <strong class="positive">Blocked</strong>
+              <small>External AI/API calls</small>
+            </div>
+          </div>
+
+          <div class="dashboard-overview-grid">
+            <section class="overview-section" aria-labelledby="system-status-title">
+              <div class="section-heading">
+                <div>
+                  <h3 id="system-status-title">System status</h3>
+                  <p>Local services available to this workspace</p>
+                </div>
+              </div>
+
+              <div class="status-list">
+                <div class="status-row">
+                  <span class="status-dot"></span>
+                  <strong>Local AI Runtime</strong>
+                  <span class="status-value">Online</span>
+                </div>
+                <div class="status-row">
+                  <span class="status-dot"></span>
+                  <strong>Vector Database</strong>
+                  <span class="status-value">Online</span>
+                </div>
+                <div class="status-row">
+                  <span class="status-dot"></span>
+                  <strong>Vision/OCR Engine</strong>
+                  <span class="status-value">Ready</span>
+                </div>
+                <div class="status-row">
+                  <span class="status-dot blocked"></span>
+                  <strong>Network Isolation</strong>
+                  <span class="status-value">Blocked</span>
+                </div>
+              </div>
+            </section>
+
+            <section class="overview-section" aria-labelledby="quick-actions-title">
+              <div class="section-heading">
+                <div>
+                  <h3 id="quick-actions-title">Quick actions</h3>
+                  <p>Start work without leaving the overview</p>
+                </div>
+              </div>
+
+              <div class="quick-actions-grid">
+                <button class="quick-action" data-action="new-chat">
+                  <span class="quick-action-icon">+</span>
+                  <span>New AI Task</span>
+                </button>
+                <button class="quick-action" data-action="upload">
+                  <span class="quick-action-icon">⇧</span>
+                  <span>Upload &amp; Analyze</span>
+                </button>
+                <button class="quick-action" data-view="knowledge">
+                  <span class="quick-action-icon">⌕</span>
+                  <span>Search Knowledge</span>
+                </button>
+                <button class="quick-action" data-view="sandbox">
+                  <span class="quick-action-icon">&lt;/&gt;</span>
+                  <span>Run Secure Code</span>
+                </button>
+              </div>
+            </section>
+          </div>
+
+          <div class="two-column">
+            <div class="panel">
+              <div class="panel-header">
+                <div>
+                  <h3>Recent work</h3>
+                  <p>Local activity from the workbench</p>
                 </div>
 
-                <div class="calc-result-display">
-                  <span id="calcExpression">120 + 35</span>
-                  <strong id="calcResult">—</strong>
+                <button class="text-button" data-view="audit">
+                  View logs
+                </button>
+              </div>
+
+              <div id="recentActivityList" class="activity-list">
+                <!-- Dynamically populated recent activity -->
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="view" id="view-chat">
+          <div class="workspace-layout single">
+            <div class="workspace-main panel">
+              <div class="panel-header">
+                <div>
+                  <h3>AI Chat</h3>
+                  <p>Private conversational workspace</p>
                 </div>
 
-                <div id="calcSteps">
-                  <div class="calc-step">
-                    <span>1</span>
-
-                    <p>Input A = 120</p>
-                  </div>
-
-                  <div class="calc-step">
-                    <span>2</span>
-
-                    <p>Input B = 35</p>
-                  </div>
-
-                  <div class="calc-step">
-                    <span>3</span>
-                    <p>Operation = Addition</p>
-                  </div>
-
-                  <div class="calc-step">
-                    <span>4</span>
-                    <p>Run the calculation to generate the final step.</p>
-                  </div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <button class="secondary-button" id="newChatBtn" title="Start a fresh chat"
+                    style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; font-size: 12px; font-weight: 700; border-radius: 7px; background: var(--surface-2); border: 1px solid var(--border); color: var(--text); cursor: pointer;">
+                    <span>➕</span> New chat
+                  </button>
+                  <span class="mini-badge chat-local-badge"><span class="status-dot"></span> LOCAL · Inference</span>
                 </div>
+              </div>
 
-                <div class="formula-transparency">
-                  <div>
-                    <span>Formula</span>
-                    <strong id="calcFormula">A + B</strong>
-                  </div>
-                  <div>
-                    <span>Intermediate values</span>
-                    <strong id="calcIntermediate">120 + 35</strong>
-                  </div>
-                  <div>
-                    <span>Final result</span>
-                    <strong id="calcFinal">—</strong>
-                  </div>
-                </div>
+              <div class="chat-area" id="chatArea">
+                <div class="chat-welcome">
+                  <div class="chat-welcome-mark"><img src="logo.png" alt="SOVAI logo" /></div>
+                  <strong>SOVAI</strong>
+                  <h2>How can I help with your private workspace?</h2>
+                  <p>
+                    Ask questions, analyze documents, search your private knowledge base,
+                    or use approved local tools.
+                  </p>
 
-                <div class="recent-calculations">
-                  <div class="recent-calculations-heading">
-                    <strong>Recent calculations</strong>
-                    <span>Current session</span>
-                  </div>
-                  <div id="recentCalculations">
-                    <p class="recent-empty">No completed calculations yet.</p>
+                  <div class="chat-suggestions">
+                    <button>Summarize the latest inspection report</button>
+                    <button>Explain this engineering drawing</button>
+                    <button>Search the maintenance knowledge base</button>
+                    <button>Create an approval note from uploaded documents</button>
                   </div>
                 </div>
               </div>
-            </div>
-          </section>
 
-          <section class="view" id="view-coding">
-            <div class="workspace-layout single">
-              <div class="workspace-main panel coding-ide">
-                <div class="panel-header coding-ide-header">
-                  <div>
-                    <h3>Coding Workspace</h3>
+              <div class="chat-attachments-bar" id="chatAttachmentsBar" style="display: none;">
+                <span class="attachments-label">Attachments:</span>
+                <div class="chat-attachments-list" id="chatAttachmentsList"></div>
+              </div>
 
-                    <p>Generate and work with code for internal tools</p>
-                  </div>
+              <div class="chat-composer">
+                <div class="chat-composer-row">
+                  <button class="chat-attach-button" data-action="upload" title="Attach files"
+                    aria-label="Attach files">+</button>
 
-                  <span class="mini-badge sandbox-badge"><span class="status-dot"></span> SANDBOX READY </span>
+                  <textarea id="chatInput" rows="1" placeholder="Ask about your private workspace..."></textarea>
+
+                  <button class="primary-button chat-send-button" id="sendChat" aria-label="Send message"
+                    title="Send message">↗</button>
                 </div>
 
-                <div class="coding-ide-grid">
-                  <section class="editor-pane" aria-label="Python code editor">
-                    <div class="editor-toolbar">
-                      <div class="editor-file">
-                        <span class="language-badge">PY</span>
-                        <strong>main.py</strong>
-                        <span class="editor-save-state">Ready</span>
-                      </div>
+              </div>
+            </div>
+          </div>
+        </section>
 
-                      <div class="editor-actions">
-                        <span class="editor-language">Python</span>
-                        <button class="secondary-button" id="runCode">Run</button>
-                        <button class="secondary-button" type="button">Format</button>
-                        <button class="secondary-button" type="button">Save</button>
-                      </div>
+        <section class="view" id="view-files">
+          <div class="section-heading">
+            <div>
+              <h3>Files & Documents</h3>
+              <p>
+                Organize, upload, and index confidential engineering and business material by folders.
+              </p>
+            </div>
+
+            <div class="heading-actions" style="display: flex; gap: 10px; align-items: center;">
+              <button class="secondary-button" id="btnNewFolder">
+                📁 + New Folder
+              </button>
+              <button class="primary-button" data-action="upload">
+                ⇧ Upload files
+              </button>
+            </div>
+          </div>
+
+          <!-- Folder Explorer Section -->
+          <div class="panel folder-explorer-panel"
+            style="padding: 18px; margin-bottom: 16px; background: var(--surface);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 16px;">📁</span>
+                <h4
+                  style="margin: 0; font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text);">
+                  Directory Folders</h4>
+                <span id="folderCountBadge" class="tag blue" style="font-size: 10px; padding: 2px 8px;">1 Folder</span>
+              </div>
+              <div style="font-size: 11px; color: var(--muted);">
+                Click any folder card to view documents
+              </div>
+            </div>
+
+            <!-- Folder Explorer Grid -->
+            <div id="folderGrid" class="folder-grid">
+              <!-- Dynamically populated folder cards -->
+            </div>
+
+            <!-- Inline Folder Creation Box -->
+            <div id="folderCreateCard" class="folder-create-box"
+              style="display: none; margin-top: 14px; padding: 14px 18px; background: var(--surface-2); border: 1.5px dashed var(--accent); border-radius: 12px;">
+              <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+                <div style="flex: 1; display: flex; align-items: center; gap: 10px;">
+                  <span style="font-size: 20px;">📂</span>
+                  <input id="newFolderNameInput" type="text"
+                    placeholder="Type new folder name (e.g., Engineering_Specs)..."
+                    style="flex: 1; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--text); font-size: 12px; font-weight: 600;" />
+                </div>
+                <div style="display: flex; gap: 8px;">
+                  <button class="primary-button" id="btnCreateFolderSubmit">Create Folder</button>
+                  <button class="secondary-button" id="btnCancelFolderCreate">Cancel</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Breadcrumb Navigation Bar -->
+          <div class="breadcrumb-bar"
+            style="display: flex; align-items: center; gap: 8px; padding: 10px 16px; margin-bottom: 14px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 10px; font-size: 12px;">
+            <span style="color: var(--muted);">Location:</span>
+            <span style="font-weight: 700; color: var(--text);">📁 Workspace</span>
+            <span style="color: var(--muted);">/</span>
+            <span class="tag blue" style="font-size: 11px; font-weight: 800; padding: 3px 10px;">📂 <span
+                id="breadcrumbFolderName">Default</span></span>
+          </div>
+
+          <div class="upload-zone" id="dropZone">
+            <div class="upload-icon">⇧</div>
+
+            <h3>Drop files here</h3>
+
+            <p>
+              PDF, DOCX, XLSX, PPTX, images, scanned drawings and text files.
+              Target folder: <span id="activeUploadFolderTag" class="tag blue"
+                style="font-size: 11px; padding: 2px 8px;">Default</span>
+            </p>
+
+            <button class="secondary-button" data-action="upload">
+              Browse files
+            </button>
+          </div>
+
+          <div class="table-panel panel">
+            <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <h3>Documents</h3>
+                <p>Files available in <span id="documentTableFolderText">Default</span> folder</p>
+              </div>
+            </div>
+
+            <div class="file-table" id="fileTable">
+              <div class="file-row head">
+                <span>Name</span>
+                <span>Folder</span>
+                <span>Source</span>
+                <span>Status</span>
+              </div>
+
+              <div class="file-row">
+                <strong>Inspection_Report_07.pdf</strong>
+                <span>Default</span>
+                <span>Local upload</span>
+                <span class="tag green">Indexed</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="view" id="view-knowledge">
+          <div class="section-heading">
+            <div>
+              <h3>Local Knowledge Base / RAG</h3>
+
+              <p>
+                Search private manuals, SOPs, approval notes and
+                organizational knowledge by folder context.
+              </p>
+            </div>
+          </div>
+
+          <div class="search-panel panel">
+            <div class="search-box">
+              <span>⌕</span>
+
+              <input id="ragSearch" placeholder="Search your private knowledge base..." />
+
+              <select id="ragFolderSelect"
+                style="padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface-2); color: var(--text); font-size: 11px; font-weight: 700; cursor: pointer;">
+                <option value="">All Folders</option>
+                <option value="Default" selected>Default</option>
+              </select>
+
+              <button class="primary-button" id="ragButton">Search</button>
+            </div>
+          </div>
+
+          <div class="rag-results">
+            <!-- Dynamically populated knowledge base entries or clean empty state -->
+          </div>
+        </section>
+
+        <section class="view" id="view-calculations">
+          <div class="section-heading">
+            <div>
+              <h3>Engineering Calculations</h3>
+
+              <p>
+                Show inputs, formulas, intermediate steps and final results.
+              </p>
+            </div>
+          </div>
+
+          <div class="calc-grid">
+            <div class="panel calc-form">
+              <div class="calc-panel-heading">
+                <span class="eyebrow">INPUT WORKBENCH</span>
+                <h3>Calculation input</h3>
+              </div>
+
+              <label>
+                Calculation type
+                <select id="calcType">
+                  <option value="basic">Basic Arithmetic</option>
+                  <option value="engineering">Engineering Formula</option>
+                </select>
+              </label>
+
+              <label>
+                Input A
+                <div class="calc-input-with-unit">
+                  <input id="calcA" type="number" value="120" />
+                  <select id="calcUnitA" aria-label="Input A unit">
+                    <option value="">unit</option>
+                    <option>mm</option>
+                    <option>m</option>
+                    <option>kg</option>
+                    <option>Pa</option>
+                    <option>kPa</option>
+                    <option>bar</option>
+                    <option>psi</option>
+                    <option>°C</option>
+                    <option>°F</option>
+                    <option>W</option>
+                    <option>kW</option>
+                    <option>V</option>
+                    <option>A</option>
+                    <option>L/min</option>
+                    <option>m³/h</option>
+                  </select>
+                </div>
+              </label>
+
+              <label>
+                Input B
+                <div class="calc-input-with-unit">
+                  <input id="calcB" type="number" value="35" />
+                  <select id="calcUnitB" aria-label="Input B unit">
+                    <option value="">unit</option>
+                    <option>mm</option>
+                    <option>m</option>
+                    <option>kg</option>
+                    <option>Pa</option>
+                    <option>kPa</option>
+                    <option>bar</option>
+                    <option>psi</option>
+                    <option>°C</option>
+                    <option>°F</option>
+                    <option>W</option>
+                    <option>kW</option>
+                    <option>V</option>
+                    <option>A</option>
+                    <option>L/min</option>
+                    <option>m³/h</option>
+                  </select>
+                </div>
+              </label>
+
+              <label>
+                Operation
+
+                <select id="calcOp">
+                  <option value="add">Addition</option>
+
+                  <option value="multiply">Multiplication</option>
+
+                  <option value="divide">Division</option>
+
+                  <option value="subtract">Subtraction</option>
+
+                  <option value="percentage">Percentage</option>
+
+                  <option value="power">Power</option>
+
+                  <option value="sqrt">Square Root</option>
+
+                  <option value="average">Average</option>
+
+                  <option value="ratio">Ratio</option>
+
+                  <option value="efficiency">Efficiency</option>
+                </select>
+              </label>
+
+              <div class="engineering-formulas" id="engineeringFields" hidden>
+                <span class="form-section-label">Formula templates</span>
+                <button type="button" data-formula="Efficiency = Output / Input × 100">Efficiency <span>Output / Input ×
+                    100</span></button>
+                <button type="button" data-formula="Pressure = Force / Area">Pressure <span>Force / Area</span></button>
+                <button type="button" data-formula="Power = Voltage × Current">Power <span>Voltage ×
+                    Current</span></button>
+                <button type="button" data-formula="Flow Rate = Volume / Time">Flow Rate <span>Volume /
+                    Time</span></button>
+              </div>
+
+              <button class="primary-button calc-run-button" id="runCalc">
+                Run calculation
+              </button>
+            </div>
+
+            <div class="panel calculation-output">
+              <div class="panel-header">
+                <div>
+                  <span class="eyebrow">RESULTS</span>
+                  <h3>Calculation result</h3>
+                  <p>Transparent, deterministic arithmetic</p>
+                </div>
+              </div>
+
+              <div class="calc-result-display">
+                <span id="calcExpression">120 + 35</span>
+                <strong id="calcResult">—</strong>
+              </div>
+
+              <div id="calcSteps">
+                <div class="calc-step">
+                  <span>1</span>
+
+                  <p>Input A = 120</p>
+                </div>
+
+                <div class="calc-step">
+                  <span>2</span>
+
+                  <p>Input B = 35</p>
+                </div>
+
+                <div class="calc-step">
+                  <span>3</span>
+                  <p>Operation = Addition</p>
+                </div>
+
+                <div class="calc-step">
+                  <span>4</span>
+                  <p>Run the calculation to generate the final step.</p>
+                </div>
+              </div>
+
+              <div class="formula-transparency">
+                <div>
+                  <span>Formula</span>
+                  <strong id="calcFormula">A + B</strong>
+                </div>
+                <div>
+                  <span>Intermediate values</span>
+                  <strong id="calcIntermediate">120 + 35</strong>
+                </div>
+                <div>
+                  <span>Final result</span>
+                  <strong id="calcFinal">—</strong>
+                </div>
+              </div>
+
+              <div class="recent-calculations">
+                <div class="recent-calculations-heading">
+                  <strong>Recent calculations</strong>
+                  <span>Current session</span>
+                </div>
+                <div id="recentCalculations">
+                  <p class="recent-empty">No completed calculations yet.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="view" id="view-coding">
+          <div class="workspace-layout single">
+            <div class="workspace-main panel coding-ide">
+              <div class="panel-header coding-ide-header">
+                <div>
+                  <h3>Coding Workspace</h3>
+
+                  <p>Generate and work with code for internal tools</p>
+                </div>
+
+                <span class="mini-badge sandbox-badge"><span class="status-dot"></span> SANDBOX READY </span>
+              </div>
+
+              <div class="coding-ide-grid">
+                <section class="editor-pane" aria-label="Python code editor">
+                  <div class="editor-toolbar">
+                    <div class="editor-file">
+                      <span class="language-badge">PY</span>
+                      <strong>main.py</strong>
+                      <span class="editor-save-state">Ready</span>
                     </div>
 
-                    <div class="code-editor-shell">
-                      <div class="code-line-numbers" id="codeLineNumbers" aria-hidden="true"></div>
-                      <textarea
-                        class="code-editor"
-                        id="codeEditor"
-                        spellcheck="false"
-                        aria-label="main.py editor"
-                      >
+                    <div class="editor-actions">
+                      <span class="editor-language">Python</span>
+                      <button class="secondary-button" id="runCode">Run</button>
+                      <button class="secondary-button" type="button">Format</button>
+                      <button class="secondary-button" type="button">Save</button>
+                    </div>
+                  </div>
+
+                  <div class="code-editor-shell">
+                    <div class="code-line-numbers" id="codeLineNumbers" aria-hidden="true"></div>
+                    <textarea class="code-editor" id="codeEditor" spellcheck="false" aria-label="main.py editor">
 def calculate_efficiency(output_value, input_value):
     if input_value == 0:
         raise ValueError("Input value cannot be zero")
     return (output_value / input_value) * 100
 
 print(calculate_efficiency(85, 100))</textarea>
-                    </div>
-                  </section>
+                  </div>
+                </section>
 
-                  <section class="console-pane" aria-label="Code execution console">
-                    <div class="console-header">
-                      <div>
-                        <strong>Console</strong>
-                        <span class="console-state"><span class="status-dot"></span> Ready</span>
-                      </div>
-                      <div class="console-actions">
-                        <button type="button" id="clearTerminal">Clear</button>
-                        <button type="button" id="copyTerminal">Copy</button>
-                      </div>
+                <section class="console-pane" aria-label="Code execution console">
+                  <div class="console-header">
+                    <div>
+                      <strong>Console</strong>
+                      <span class="console-state"><span class="status-dot"></span> Ready</span>
                     </div>
+                    <div class="console-actions">
+                      <button type="button" id="clearTerminal">Clear</button>
+                      <button type="button" id="copyTerminal">Copy</button>
+                    </div>
+                  </div>
 
-                    <pre class="terminal" id="terminal">
+                  <pre class="terminal" id="terminal">
 Sandbox terminal ready.
 Click "Run" to execute locally in your connected backend.</pre>
-                  </section>
-                </div>
-
+                </section>
               </div>
+
             </div>
-          </section>
+          </div>
+        </section>
 
-          <section class="view" id="view-multimodal">
-            <div class="section-heading">
-              <div>
-                <h3>Vision, OCR & Multimodal Processing</h3>
+        <section class="view" id="view-multimodal">
+          <div class="section-heading">
+            <div>
+              <h3>Vision, OCR & Multimodal Processing</h3>
 
-                <p>
-                  Analyze scanned PDFs, handwritten notes, engineering drawings
-                  and photographs.
-                </p>
-              </div>
+              <p>
+                Analyze scanned PDFs, handwritten notes, engineering drawings
+                and photographs.
+              </p>
             </div>
+          </div>
 
-            <div class="vision-grid">
-              <div class="upload-zone compact" id="visionDropZone">
-                <div class="upload-icon">▧</div>
+          <div class="vision-grid">
+            <div class="upload-zone compact" id="visionDropZone">
+              <div class="upload-icon">▧</div>
 
-                <h3>Upload image or scanned document</h3>
+              <h3>Upload image or scanned document</h3>
 
-                <p>
-                  OCR extracts text; vision-language processing interprets
-                  layout and visual context.
-                </p>
+              <p>
+                OCR extracts text; vision-language processing interprets
+                layout and visual context.
+              </p>
 
-                <div style="display: flex; gap: 8px; width: 100%; max-width: 460px; margin: 10px auto 0 auto;">
-                  <input id="visionQueryInput" type="text" placeholder="Enter vision/OCR prompt (optional)..." style="flex: 1; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--text); font-size: 13px;" />
-                  <button class="primary-button" id="runVisionBtn" type="button">Analyze</button>
-                </div>
-
-                <div style="margin-top: 10px;">
-                  <button class="secondary-button" data-action="upload" type="button">
-                    Choose file
-                  </button>
-                </div>
+              <div style="display: flex; gap: 8px; width: 100%; max-width: 460px; margin: 10px auto 0 auto;">
+                <input id="visionQueryInput" type="text" placeholder="Enter vision/OCR prompt (optional)..."
+                  style="flex: 1; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--text); font-size: 13px;" />
+                <button class="primary-button" id="runVisionBtn" type="button">Analyze</button>
               </div>
 
-              <div class="panel vision-analysis-panel" id="visionAnalysisPanel" style="display: none;">
-                <div class="panel-header">
-                  <div>
-                    <h3>Analysis status</h3>
-                    <p>Local processing pipeline</p>
-                  </div>
-                </div>
-
-                <div class="analysis-status-list" id="visionAnalysisList">
-                  <div class="analysis-status-row is-idle">
-                    <span class="analysis-status-icon">•</span>
-                    <strong>Waiting for image</strong>
-                    <small>Choose a file to begin local analysis.</small>
-                  </div>
-                </div>
-              </div>
-
-              <div id="visionPreviewArea" class="vision-preview-area" style="display: none;"></div>
-            </div>
-          </section>
-
-          <section class="view" id="view-sandbox">
-            <div class="section-heading">
-              <div>
-                <h3>Sandbox Execution</h3>
-
-                <p>Isolated environment for generated or user-provided code.</p>
+              <div style="margin-top: 10px;">
+                <button class="secondary-button" data-action="upload" type="button">
+                  Choose file
+                </button>
               </div>
             </div>
 
-            <div class="sandbox-banner">
-              <span class="status-dot"></span>
-
-              <div>
-                <strong> Execution boundary active </strong>
-
-                <small>
-                  Connect this UI to your backend sandbox runtime. The frontend
-                  does not execute arbitrary code directly.
-                </small>
-              </div>
-            </div>
-
-            <div class="panel">
+            <div class="panel vision-analysis-panel" id="visionAnalysisPanel" style="display: none;">
               <div class="panel-header">
                 <div>
-                  <h3>Execution history</h3>
-
-                  <p>Recent sandbox runs</p>
+                  <h3>Analysis status</h3>
+                  <p>Local processing pipeline</p>
                 </div>
               </div>
 
-              <div class="file-row head">
-                <span>Run ID</span>
-                <span>Task</span>
-                <span>Duration</span>
-                <span>Status</span>
-              </div>
-
-              <div class="file-row">
-                <strong> #RUN-1042 </strong>
-
-                <span> Efficiency calculation </span>
-
-                <span> 0.84s </span>
-
-                <span class="tag green"> Verified </span>
-              </div>
-
-              <div class="file-row">
-                <strong> #RUN-1041 </strong>
-
-                <span> Document parser test </span>
-
-                <span> 1.42s </span>
-
-                <span class="tag green"> Verified </span>
-              </div>
-            </div>
-          </section>
-
-          <section class="view" id="view-tools">
-            <div class="section-heading">
-              <div>
-                <h3>Local Tools</h3>
-
-                <p>Controlled capabilities exposed to agents and users.</p>
-              </div>
-            </div>
-
-            <div class="tool-grid">
-              <button class="tool-card">
-                <span>□</span>
-                <strong>File Read / Write</strong>
-                <small> Controlled access to workspace files. </small>
-              </button>
-
-              <button class="tool-card">
-                <span>&lt;/&gt;</span>
-                <strong>Code Execution</strong>
-                <small> Run approved work inside a sandbox. </small>
-              </button>
-
-              <button class="tool-card">
-                <span>▦</span>
-                <strong>Spreadsheet Operations</strong>
-                <small> Read, transform and generate Excel workbooks. </small>
-              </button>
-
-              <button class="tool-card">
-                <span>⌕</span>
-                <strong>Internal Document Search</strong>
-                <small> Search local knowledge sources. </small>
-              </button>
-            </div>
-          </section>
-
-          <section class="view" id="view-security">
-            <div class="section-heading">
-              <div>
-                <h3>Security Center</h3>
-
-                <p>Privacy, network isolation and operational controls.</p>
-              </div>
-            </div>
-
-            <div class="security-grid">
-              <div class="security-card">
-                <span class="check big"> ✓ </span>
-
-                <h3>Air-Gapped / Offline</h3>
-
-                <p>
-                  Designed to operate without dependency on the public Internet.
-                </p>
-
-                <span class="tag green"> Enabled </span>
-              </div>
-
-              <div class="security-card">
-                <span class="check big"> ✓ </span>
-
-                <h3>No Data Leakage</h3>
-
-                <p>
-                  Confidential inputs, processing and generated outputs remain
-                  within the controlled environment.
-                </p>
-
-                <span class="tag green"> Protected </span>
-              </div>
-
-              <div class="security-card">
-                <span class="check big"> ✓ </span>
-
-                <h3>External Call Blocking</h3>
-
-                <p>
-                  Outbound AI/API traffic can be blocked at the network
-                  boundary.
-                </p>
-
-                <span class="tag green"> Blocked </span>
-              </div>
-
-              <div class="security-card">
-                <span class="check big"> ✓ </span>
-
-                <h3>Audit Logging</h3>
-
-                <p>
-                  Agent, model and tool actions are recorded for later
-                  inspection.
-                </p>
-
-                <span class="tag green"> Active </span>
-              </div>
-            </div>
-          </section>
-
-          <section class="view" id="view-audit">
-            <div class="section-heading">
-              <div>
-                <h3>Activity / Audit Logs</h3>
-
-                <p>Inspectable history of agent, model and tool activity.</p>
-              </div>
-
-              <button class="secondary-button">Export log</button>
-            </div>
-
-            <div class="panel audit-panel">
-              <div class="file-row head">
-                <span>Time</span>
-                <span>Activity</span>
-                <span>Component</span>
-                <span>Status</span>
-              </div>
-
-              <div class="file-row">
-                <span> 09:48:12 </span>
-
-                <strong> RAG query executed </strong>
-
-                <span> Knowledge Base </span>
-
-                <span class="tag green"> Success </span>
-              </div>
-
-              <div class="file-row">
-                <span> 09:44:37 </span>
-
-                <strong> Vision analysis completed </strong>
-
-                <span> Multimodal Model </span>
-
-                <span class="tag green"> Success </span>
-              </div>
-
-              <div class="file-row">
-                <span> 09:39:02 </span>
-
-                <strong> External request blocked </strong>
-
-                <span> Network Monitor </span>
-
-                <span class="tag yellow"> Blocked </span>
-              </div>
-
-              <div class="file-row">
-                <span> 09:32:19 </span>
-
-                <strong> Sandbox execution verified </strong>
-
-                <span> Execution Tool </span>
-
-                <span class="tag green"> Success </span>
-              </div>
-            </div>
-          </section>
-
-          <section class="view" id="view-settings">
-            <div class="section-heading">
-              <div>
-                <h3>Settings</h3>
-
-                <p>Workspace preferences and UI configuration.</p>
-              </div>
-            </div>
-
-            <div class="settings-grid">
-              <div class="panel settings-card">
-                <h3>Appearance</h3>
-
-                <p>Choose how the interface should look.</p>
-
-                <div class="setting-buttons">
-                  <button data-theme-choice="light">Light</button>
-
-                  <button data-theme-choice="dark">Dark</button>
-
-                  <button data-theme-choice="system">System</button>
+              <div class="analysis-status-list" id="visionAnalysisList">
+                <div class="analysis-status-row is-idle">
+                  <span class="analysis-status-icon">•</span>
+                  <strong>Waiting for image</strong>
+                  <small>Choose a file to begin local analysis.</small>
                 </div>
               </div>
             </div>
-          </section>
+
+            <div id="visionPreviewArea" class="vision-preview-area" style="display: none;"></div>
+          </div>
+        </section>
+
+        <section class="view" id="view-sandbox">
+          <div class="section-heading">
+            <div>
+              <h3>Sandbox Execution</h3>
+
+              <p>Isolated environment for generated or user-provided code.</p>
+            </div>
+          </div>
+
+          <div class="sandbox-banner">
+            <span class="status-dot"></span>
+
+            <div>
+              <strong> Execution boundary active </strong>
+
+              <small>
+                Connect this UI to your backend sandbox runtime. The frontend
+                does not execute arbitrary code directly.
+              </small>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <div>
+                <h3>Execution history</h3>
+
+                <p>Recent sandbox runs</p>
+              </div>
+            </div>
+
+            <div class="file-row head">
+              <span>Run ID</span>
+              <span>Task</span>
+              <span>Duration</span>
+              <span>Status</span>
+            </div>
+
+            <div id="sandboxHistoryContainer" class="sandbox-history-list">
+              <!-- Dynamically populated execution history or clean empty state -->
+            </div>
+          </div>
+        </section>
+
+        <section class="view" id="view-tools">
+          <div class="section-heading">
+            <div>
+              <h3>Local Tools</h3>
+
+              <p>Controlled capabilities exposed to agents and users.</p>
+            </div>
+          </div>
+
+          <div class="tool-grid">
+            <button class="tool-card">
+              <span>□</span>
+              <strong>File Read / Write</strong>
+              <small> Controlled access to workspace files. </small>
+            </button>
+
+            <button class="tool-card">
+              <span>&lt;/&gt;</span>
+              <strong>Code Execution</strong>
+              <small> Run approved work inside a sandbox. </small>
+            </button>
+
+            <button class="tool-card">
+              <span>▦</span>
+              <strong>Spreadsheet Operations</strong>
+              <small> Read, transform and generate Excel workbooks. </small>
+            </button>
+
+            <button class="tool-card">
+              <span>⌕</span>
+              <strong>Internal Document Search</strong>
+              <small> Search local knowledge sources. </small>
+            </button>
+          </div>
+        </section>
+
+        <section class="view" id="view-security">
+          <div class="section-heading">
+            <div>
+              <h3>Security Center</h3>
+
+              <p>Privacy, network isolation and operational controls.</p>
+            </div>
+          </div>
+
+          <div class="security-grid">
+            <div class="security-card">
+              <span class="check big"> ✓ </span>
+
+              <h3>Air-Gapped / Offline</h3>
+
+              <p>
+                Designed to operate without dependency on the public Internet.
+              </p>
+
+              <span class="tag green"> Enabled </span>
+            </div>
+
+            <div class="security-card">
+              <span class="check big"> ✓ </span>
+
+              <h3>No Data Leakage</h3>
+
+              <p>
+                Confidential inputs, processing and generated outputs remain
+                within the controlled environment.
+              </p>
+
+              <span class="tag green"> Protected </span>
+            </div>
+
+            <div class="security-card">
+              <span class="check big"> ✓ </span>
+
+              <h3>External Call Blocking</h3>
+
+              <p>
+                Outbound AI/API traffic can be blocked at the network
+                boundary.
+              </p>
+
+              <span class="tag green"> Blocked </span>
+            </div>
+
+            <div class="security-card">
+              <span class="check big"> ✓ </span>
+
+              <h3>Audit Logging</h3>
+
+              <p>
+                Agent, model and tool actions are recorded for later
+                inspection.
+              </p>
+
+              <span class="tag green"> Active </span>
+            </div>
+          </div>
+        </section>
+
+        <section class="view" id="view-audit">
+          <div class="section-heading">
+            <div>
+              <h3>Activity / Audit Logs</h3>
+
+              <p>Inspectable history of agent, model and tool activity.</p>
+            </div>
+
+            <button class="secondary-button" id="exportAuditLog">Export log</button>
+          </div>
+
+          <div class="panel audit-panel">
+            <div class="file-row head">
+              <span>Time</span>
+              <span>Activity</span>
+              <span>Component</span>
+              <span>Status</span>
+            </div>
+
+            <div id="auditLogList" class="audit-log-list">
+              <!-- Dynamically populated audit log rows or clean empty state -->
+            </div>
+          </div>
+        </section>
+
+        <section class="view" id="view-settings">
+          <div class="section-heading">
+            <div>
+              <h3>Settings</h3>
+
+              <p>Workspace preferences and UI configuration.</p>
+            </div>
+          </div>
+
+          <div class="settings-grid">
+            <div class="panel settings-card">
+              <h3>Appearance</h3>
+
+              <p>Choose how the interface should look.</p>
+
+              <div class="setting-buttons">
+                <button data-theme-choice="light">Light</button>
+
+                <button data-theme-choice="dark">Dark</button>
+
+                <button data-theme-choice="system">System</button>
+              </div>
+        </section>
+
+        <section class="view" id="view-admin">
+          <div class="section-heading">
+            <div>
+              <h3>Administration &amp; IAM Security</h3>
+              <p>AWS-style multi-user authentication, granular ability assignment, and retrieval policies.</p>
+            </div>
+            <button type="button" id="openCreateUserModalBtn" class="primary-button"
+              style="display:inline-flex; align-items:center; gap:6px;">
+              <svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                style="width:14px; height:14px;">
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+              Create System User
+            </button>
+          </div>
+
+          <div class="stats-grid" style="margin-bottom: 20px;">
+            <div class="stat-card">
+              <span>System Accounts</span>
+              <strong id="statUserCount">03</strong>
+              <small>Active user identities</small>
+            </div>
+            <div class="stat-card">
+              <span>Security Access</span>
+              <strong class="positive">RBAC + IAM</strong>
+              <small>Granular policy enforcement</small>
+            </div>
+            <div class="stat-card">
+              <span>System Abilities</span>
+              <strong>07</strong>
+              <small>Controlled capabilities</small>
+            </div>
+            <div class="stat-card">
+              <span>Document Isolation</span>
+              <strong class="positive">Active</strong>
+              <small>Folder &amp; doc level filtering</small>
+            </div>
+          </div>
+
+          <div class="panel settings-card" id="iamAdminCard">
+            <div style="padding: 18px; overflow-x: auto;">
+              <table class="iam-user-table"
+                style="width:100%; border-collapse:collapse; font-size:11px; text-align:left;">
+                <thead>
+                  <tr
+                    style="border-bottom:1px solid var(--border); color:var(--muted); font-size:10px; text-transform:uppercase; letter-spacing:0.05em;">
+                    <th style="padding:10px 8px;">User</th>
+                    <th style="padding:10px 8px;">Role</th>
+                    <th style="padding:10px 8px;">Attached Abilities (Policies)</th>
+                    <th style="padding:10px 8px;">Allowed Folders</th>
+                    <th style="padding:10px 8px;">Allowed Docs</th>
+                    <th style="padding:10px 8px; text-align:right;">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="iamUserTableBody">
+                  <!-- Dynamic user rows populated by app.js -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <!-- Login Modal -->
+  <div class="modal-overlay" id="loginModal"
+    style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); backdrop-filter:blur(4px); z-index:9999; place-items:center;">
+    <div class="modal-card"
+      style="background:var(--surface); border:1px solid var(--border); border-radius:14px; width:400px; max-width:92vw; padding:24px; box-shadow:0 10px 40px rgba(0,0,0,0.5);">
+      <div style="text-align:center; margin-bottom:20px;">
+        <img src="logo.png" alt="SOVAI Logo" style="width:48px; height:48px; margin-bottom:8px;">
+        <h2 style="margin:0; font-size:20px;">SovereignAI Portal</h2>
+        <p style="margin:4px 0 0; color:var(--muted); font-size:11px;">Sign in to access your secure on-premise
+          workbench</p>
+      </div>
+
+      <form id="loginForm" style="display:flex; flex-direction:column; gap:14px;">
+        <div id="loginError"
+          style="display:none; background:rgba(224,86,86,0.15); border:1px solid var(--danger); color:var(--danger); padding:8px 12px; border-radius:6px; font-size:11px; text-align:center;">
         </div>
-      </main>
+
+        <div>
+          <label for="loginUsername"
+            style="display:block; font-size:11px; font-weight:700; margin-bottom:4px;">Username</label>
+          <input type="text" id="loginUsername" required placeholder="e.g. admin"
+            style="width:100%; padding:9px 12px; background:var(--surface-2); border:1px solid var(--border); border-radius:8px; color:var(--text); font-size:12px;">
+        </div>
+
+        <div>
+          <label for="loginPassword"
+            style="display:block; font-size:11px; font-weight:700; margin-bottom:4px;">Password</label>
+          <input type="password" id="loginPassword" required placeholder="••••••••"
+            style="width:100%; padding:9px 12px; background:var(--surface-2); border:1px solid var(--border); border-radius:8px; color:var(--text); font-size:12px;">
+        </div>
+
+        <button type="submit" class="primary-button"
+          style="padding:10px; width:100%; font-weight:800; margin-top:6px;">Sign In</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Create User Modal -->
+  <div class="modal-overlay" id="createUserModal"
+    style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); backdrop-filter:blur(4px); z-index:9999; place-items:center;">
+    <div class="modal-card"
+      style="background:var(--surface); border:1px solid var(--border); border-radius:14px; width:520px; max-width:92vw; padding:24px; box-shadow:0 10px 40px rgba(0,0,0,0.5);">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+        <h2 style="margin:0; font-size:16px;">Create New System User</h2>
+        <button type="button" onclick="document.getElementById('createUserModal').style.display='none'"
+          style="background:none; border:none; color:var(--muted); font-size:18px; cursor:pointer;">×</button>
+      </div>
+
+      <form id="createUserForm" style="display:flex; flex-direction:column; gap:12px;">
+        <div id="createUserError"
+          style="display:none; background:rgba(224,86,86,0.15); border:1px solid var(--danger); color:var(--danger); padding:8px 12px; border-radius:6px; font-size:11px;">
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+          <div>
+            <label style="display:block; font-size:11px; font-weight:700; margin-bottom:4px;">Username</label>
+            <input type="text" id="newUsername" required placeholder="e.g. jdoe"
+              style="width:100%; padding:7px 10px; background:var(--surface-2); border:1px solid var(--border); border-radius:6px; color:var(--text); font-size:11px;">
+          </div>
+          <div>
+            <label style="display:block; font-size:11px; font-weight:700; margin-bottom:4px;">Password</label>
+            <input type="password" id="newPassword" required placeholder="••••••••"
+              style="width:100%; padding:7px 10px; background:var(--surface-2); border:1px solid var(--border); border-radius:6px; color:var(--text); font-size:11px;">
+          </div>
+        </div>
+
+        <div>
+          <label style="display:block; font-size:11px; font-weight:700; margin-bottom:4px;">System Role</label>
+          <select id="newRole"
+            style="width:100%; padding:7px 10px; background:var(--surface-2); border:1px solid var(--border); border-radius:6px; color:var(--text); font-size:11px;">
+            <option value="User">User (Standard Access)</option>
+            <option value="Administrator">Administrator (Full Admin Control)</option>
+          </select>
+        </div>
+
+        <div>
+          <label style="display:block; font-size:11px; font-weight:700; margin-bottom:4px;">Feature Access</label>
+          <div
+            style="display:grid; grid-template-columns:1fr 1fr; gap:8px; background:var(--surface-2); padding:12px; border-radius:8px; border:1px solid var(--border);">
+            <label style="font-size:11px; display:flex; align-items:center; gap:6px; cursor:pointer;"><input
+                type="checkbox" class="new-ability-cb" value="can_use_chat" checked> <svg class="btn-svg"
+                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px; height:13px;">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+              </svg> AI Chat</label>
+            <label style="font-size:11px; display:flex; align-items:center; gap:6px; cursor:pointer;"><input
+                type="checkbox" class="new-ability-cb" value="can_search_rag" checked> <svg class="btn-svg"
+                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px; height:13px;">
+                <ellipse cx="12" cy="5" rx="9" ry="3" />
+                <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" />
+                <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
+              </svg> Search RAG Docs</label>
+            <label style="font-size:11px; display:flex; align-items:center; gap:6px; cursor:pointer;"><input
+                type="checkbox" class="new-ability-cb" value="can_upload_documents"> <svg class="btn-svg"
+                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px; height:13px;">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="17 8 12 3 7 8" />
+                <line x1="12" y1="3" x2="12" y2="15" />
+              </svg> Upload Documents</label>
+            <label style="font-size:11px; display:flex; align-items:center; gap:6px; cursor:pointer;"><input
+                type="checkbox" class="new-ability-cb" value="can_delete_documents"> <svg class="btn-svg"
+                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px; height:13px;">
+                <polyline points="3 6 5 6 21 6" />
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+              </svg> Delete Documents</label>
+            <label style="font-size:11px; display:flex; align-items:center; gap:6px; cursor:pointer;"><input
+                type="checkbox" class="new-ability-cb" value="can_execute_code"> <svg class="btn-svg"
+                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px; height:13px;">
+                <polyline points="16 18 22 12 16 6" />
+                <polyline points="8 6 2 12 8 18" />
+              </svg> Execute Code</label>
+            <label style="font-size:11px; display:flex; align-items:center; gap:6px; cursor:pointer;"><input
+                type="checkbox" class="new-ability-cb" value="can_use_vision"> <svg class="btn-svg" viewBox="0 0 24 24"
+                fill="none" stroke="currentColor" stroke-width="2" style="width:13px; height:13px;">
+                <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z" />
+                <circle cx="12" cy="12" r="3" />
+              </svg> Vision &amp; OCR</label>
+            <label
+              style="font-size:11px; display:flex; align-items:center; gap:6px; cursor:pointer; grid-column: span 2;"><input
+                type="checkbox" class="new-ability-cb" value="can_manage_users"> <svg class="btn-svg"
+                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px; height:13px;">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+              </svg> Manage Users (Admin)</label>
+          </div>
+        </div>
+
+        <div>
+          <label style="display:block; font-size:11px; font-weight:700; margin-bottom:4px;">Document Access</label>
+          <div id="folderSelectionContainer"
+            style="display:flex; flex-wrap:wrap; gap:6px; background:var(--surface-2); padding:10px; border-radius:8px; border:1px solid var(--border); max-height:95px; overflow-y:auto;">
+            <!-- Populated dynamically with available system folders -->
+          </div>
+        </div>
+
+        <div id="userAccessSummaryContainer"
+          style="background:var(--surface-2); padding:12px; border-radius:8px; border:1px solid var(--border);">
+          <label style="display:block; font-size:11px; font-weight:700; margin-bottom:8px; color:var(--text);">User
+            Access Summary</label>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; font-size:11px;">
+            <div>
+              <div
+                style="font-weight:700; color:var(--muted); margin-bottom:6px; font-size:10px; text-transform:uppercase; letter-spacing:0.5px;">
+                Features this user can use</div>
+              <div id="summaryFeatureList" style="display:flex; flex-direction:column; gap:4px; color:var(--text);">
+                <!-- Dynamically populated live -->
+              </div>
+            </div>
+            <div>
+              <div
+                style="font-weight:700; color:var(--muted); margin-bottom:6px; font-size:10px; text-transform:uppercase; letter-spacing:0.5px;">
+                Folders this user can access</div>
+              <div id="summaryFolderList" style="display:flex; flex-direction:column; gap:4px; color:var(--text);">
+                <!-- Dynamically populated live -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:10px;">
+          <button type="button" class="secondary-button"
+            onclick="document.getElementById('createUserModal').style.display='none'">Cancel</button>
+          <button type="submit" class="primary-button" style="padding:6px 14px;">Create User</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+
+  <div class="drawer-backdrop" id="drawerBackdrop"></div>
+
+  <aside class="right-drawer" id="rightDrawer" aria-hidden="true">
+    <div class="drawer-header">
+      <div>
+        <div class="eyebrow">WORKSPACE PANEL</div>
+
+        <h2 id="drawerTitle">Quick Controls</h2>
+      </div>
+
+      <button class="icon-button drawer-close" id="drawerClose" aria-label="Close workspace panel">
+        ×
+      </button>
     </div>
 
-    <div class="drawer-backdrop" id="drawerBackdrop"></div>
+    <div class="drawer-body">
+      <div class="drawer-section" id="drawerVerificationSection">
+        <div class="drawer-section-title">
+          <strong> Verification </strong>
 
-    <aside class="right-drawer" id="rightDrawer" aria-hidden="true">
-      <div class="drawer-header">
-        <div>
-          <div class="eyebrow">WORKSPACE PANEL</div>
-
-          <h2 id="drawerTitle">Quick Controls</h2>
+          <span class="mini-badge"> CHECK </span>
         </div>
 
-        <button
-          class="icon-button drawer-close"
-          id="drawerClose"
-          aria-label="Close workspace panel"
-        >
-          ×
+        <div class="security-check">
+          <span class="check"> ✓ </span>
+
+          <div>
+            <strong> Isolated execution </strong>
+
+            <small> Use the secure local sandbox boundary. </small>
+          </div>
+        </div>
+
+        <div class="security-check">
+          <span class="check"> ✓ </span>
+
+          <div>
+            <strong> Iteration enabled </strong>
+
+            <small> Test, fix and re-run before final output. </small>
+          </div>
+        </div>
+      </div>
+
+      <div class="drawer-section">
+        <div class="drawer-section-title">
+          <strong> Quick Actions </strong>
+        </div>
+
+        <button class="drawer-action" data-action="upload">
+          ＋ Upload files
         </button>
+
+        <button class="drawer-action" data-view="security">
+          ◆ Security Center
+        </button>
+
+        <button class="drawer-action" data-view="audit">
+          ≡ Open Audit Logs
+        </button>
+
+        <div class="external-calls-line">0 external calls are made</div>
+      </div>
+    </div>
+  </aside>
+
+  <input type="file" id="fileInput" multiple style="display: none;"
+    accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.png,.jpg,.jpeg,.gif,.svg,.txt,.csv,.json,.py,.js,.md" />
+  <!-- Dedicated Create Folder Modal -->
+  <div class="modal" id="createFolderModal"
+    style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.65); backdrop-filter:blur(4px); z-index:9999; place-items:center; padding:20px;">
+    <div class="panel"
+      style="width:100%; max-width:440px; background:var(--surface); border:1px solid var(--accent); border-radius:14px; padding:24px; box-shadow:0 12px 32px rgba(0,0,0,0.5);">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+        <h3
+          style="margin:0; font-size:16px; font-weight:800; color:var(--text); display:flex; align-items:center; gap:8px;">
+          <span>📁</span> Create New Directory Folder
+        </h3>
+        <button type="button"
+          style="background:transparent; border:0; color:var(--muted); font-size:18px; cursor:pointer;"
+          onclick="document.getElementById('createFolderModal').style.display='none'">&times;</button>
       </div>
 
-      <div class="drawer-body">
-        <div class="drawer-section" id="drawerVerificationSection">
-          <div class="drawer-section-title">
-            <strong> Verification </strong>
-
-            <span class="mini-badge"> CHECK </span>
-          </div>
-
-          <div class="security-check">
-            <span class="check"> ✓ </span>
-
-            <div>
-              <strong> Isolated execution </strong>
-
-              <small> Use the secure local sandbox boundary. </small>
-            </div>
-          </div>
-
-          <div class="security-check">
-            <span class="check"> ✓ </span>
-
-            <div>
-              <strong> Iteration enabled </strong>
-
-              <small> Test, fix and re-run before final output. </small>
-            </div>
+      <form id="createFolderModalForm" onsubmit="event.preventDefault(); window.submitModalCreateFolder();">
+        <div style="margin-bottom:16px;">
+          <label
+            style="display:block; font-size:11px; font-weight:700; color:var(--muted); margin-bottom:6px; text-transform:uppercase; letter-spacing:0.05em;">Folder
+            Name</label>
+          <input type="text" id="modalFolderNameInput" placeholder="e.g. Project_Alpha, Financial_Reports..." required
+            style="width:100%; padding:10px 14px; background:var(--surface-2); border:1px solid var(--border); border-radius:8px; color:var(--text); font-size:13px; font-weight:600;">
+          <div id="createFolderModalError" style="color:var(--danger); font-size:11px; margin-top:6px; display:none;">
           </div>
         </div>
 
-        <div class="drawer-section">
-          <div class="drawer-section-title">
-            <strong> Quick Actions </strong>
-          </div>
-
-          <button class="drawer-action" data-action="upload">
-            ＋ Upload files
-          </button>
-
-          <button class="drawer-action" data-view="security">
-            ◆ Security Center
-          </button>
-
-          <button class="drawer-action" data-view="audit">
-            ≡ Open Audit Logs
-          </button>
-
-          <div class="external-calls-line">0 external calls are made</div>
+        <div style="display:flex; justify-content:flex-end; gap:10px;">
+          <button type="button" class="secondary-button"
+            onclick="document.getElementById('createFolderModal').style.display='none'">Cancel</button>
+          <button type="submit" class="primary-button" style="padding:8px 18px;">Create Folder</button>
         </div>
-      </div>
-    </aside>
+      </form>
+    </div>
+  </div>
 
-    <input
-      type="file"
-      id="fileInput"
-      multiple
-      style="display: none;"
-      accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.png,.jpg,.jpeg,.gif,.svg,.txt,.csv,.json,.py,.js,.md"
-    />
-    <div class="toast" id="toast"></div>
+  <div class="toast" id="toast"></div>
 
-    <script type="module" src="app.js?v=20260920"></script>
-  </body>
+  <script type="module" src="app.js?v=20260925_v2"></script>
+</body>
+
 </html>

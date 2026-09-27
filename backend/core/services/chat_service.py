@@ -195,7 +195,8 @@ def chat_stream(
     message: str,
     model: Optional[str] = None,
     selected_docs: Optional[List[str]] = None,
-    image_path: Optional[str] = None
+    image_path: Optional[str] = None,
+    user: Optional[dict] = None
 ):
     if image_path:
         from backend.core.services.vision_service import analyze_image_with_vision
@@ -236,21 +237,22 @@ def chat_stream(
         llm = get_model(model_name)
 
         context = None
-        if selected_docs:
-            try:
-                from backend.core.rag.retrive import get_context
-                context = get_context(message, selected_docs=selected_docs)
-            except Exception as r_err:
-                logger.warning(f"RAG retrieval warning: {r_err}")
+        try:
+            from backend.core.rag.retrive import get_context
+            retrieved_context = get_context(message, selected_docs=selected_docs, user=user)
+            if retrieved_context and retrieved_context.strip():
+                context = retrieved_context
+        except Exception as r_err:
+            logger.warning(f"RAG retrieval warning: {r_err}")
+
 
         if context:
             prompt = f"""
-You are SovereignAI, a smart private local AI assistant.
+You are SovereignAI, an intelligent private workspace AI assistant.
 
-Instructions:
-1. Use the local knowledge-base context below if it contains relevant information for the user's request.
-2. If the user's question is a general knowledge question (such as "who is ceo of google", world facts, science, coding, history, etc.) and is NOT answered by the local context, answer the question directly using your general knowledge.
-3. NEVER say "the provided context does not contain information" if you can answer the question from your general knowledge.
+CRITICAL IDENTITY DIRECTIVE:
+- You are SovereignAI, a private local AI assistant. You must ALWAYS state your identity as SovereignAI.
+- Never claim to be the author, subject, speaker, or narrator mentioned in the document context.
 
 Local Knowledge-Base Context:
 {context}
@@ -258,11 +260,23 @@ Local Knowledge-Base Context:
 User Request:
 {message}
 
-If the user asks to create a document, presentation, PDF, Excel file, or other file, generate the complete content that should go inside that file.
-Do not talk about calling tools or function calls. Just generate the actual content.
+Instructions:
+- Use the Local Knowledge-Base Context above to answer the user request.
+- Be clear, accurate, and concise.
 """
         else:
-            prompt = message
+            prompt = f"""
+You are SovereignAI, an intelligent private workspace AI assistant.
+
+User Request:
+{message}
+
+Instructions:
+- Answer the user request directly and helpfully using your general knowledge.
+- If asked "who are you" or about your identity, ALWAYS answer that you are SovereignAI.
+"""
+
+
 
         if model_name == "engineering":
             prompt = ENGINEERING_RESPONSE_GUIDE + "\n\nUser problem:\n" + prompt + "\n\n/no_think"
@@ -350,6 +364,15 @@ The user is requesting a multi-slide presentation. You MUST format your response
         if doc_fallback:
             for chunk in doc_fallback.split(" "):
                 yield chunk + " "
+        elif context:
+            rag_fallback = (
+                f"**SOVAI Knowledge-Base RAG Response**\n\n"
+                f"Grounding context retrieved for: *\"{message}\"*\n\n"
+                f"{context}\n\n"
+                f"*(Source: Local Knowledge Base & Vector Index)*"
+            )
+            for chunk in rag_fallback.split(" "):
+                yield chunk + " "
         else:
             model_str = f" [{model}]" if model else ""
             docs_str = f"\n• Context documents attached: {', '.join(selected_docs)}" if selected_docs else ""
@@ -361,5 +384,6 @@ The user is requesting a multi-slide presentation. You MUST format your response
             )
             for chunk in fallback_text.split(" "):
                 yield chunk + " "
+
 
 
