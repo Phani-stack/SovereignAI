@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 from backend.infrastructure.qdrant.insert import insert, insert_batch
 
 
-def save_document_to_vectordb(document):
+def save_document_to_vectordb(document, folder_name="Default"):
     filename = Path(document).name
     content = embedding.text_content_from_document(document)
     if not content or not content.strip():
@@ -27,7 +27,7 @@ def save_document_to_vectordb(document):
 
     create_collection(len(vectors[0]))
 
-    insert_batch(vectors=vectors, chunks=chunks, filename=filename, batch_size=100)
+    insert_batch(vectors=vectors, chunks=chunks, filename=filename, folder=folder_name, batch_size=100)
 
     return "Document saved successfully"
 

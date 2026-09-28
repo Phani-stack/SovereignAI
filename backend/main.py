@@ -7,6 +7,7 @@ from backend.api.routes.document import router as document_router
 from backend.api.routes.chat import router as chat_router
 from backend.api.routes.vision import router as vision_router
 from backend.api.routes.sandbox import router as sandbox_router
+from backend.api.routes.auth import router as auth_router
 
 
 app = FastAPI(
@@ -22,10 +23,12 @@ app.add_middleware(
 )
 
 
+app.include_router(auth_router)
 app.include_router(document_router)
 app.include_router(chat_router)
 app.include_router(vision_router)
 app.include_router(sandbox_router)
+
 
 
 @app.get("/health")
@@ -33,8 +36,12 @@ async def health():
     return {"status": "ok"}
 
 
+FRONTEND_DIR = Path(__file__).resolve().parents[1] / "frontend"
 UI_DIR = Path(__file__).resolve().parents[1] / "ui"
-if UI_DIR.exists():
+
+if FRONTEND_DIR.exists():
+    app.mount("/", StaticFiles(directory=str(FRONTEND_DIR), html=True), name="frontend")
+elif UI_DIR.exists():
     app.mount("/", StaticFiles(directory=str(UI_DIR), html=True), name="ui")
 
 # touch at 1788103294.606627

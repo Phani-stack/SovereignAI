@@ -2,3 +2,10 @@
 __pycache__/
 *.pyc
 .env
+
+# Runtime-generated files
+data/outputs/*
+storage/images/*
+
+# Local authentication data
+backend/data/users.json
