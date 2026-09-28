@@ -176,9 +176,29 @@ The frontend is implemented using vanilla HTML/CSS/JavaScript and is designed as
 
 ---
 
+## 📸 Screenshots
+
+### Dashboard
+
+<img src="screenshots/dashboard.png" alt="SOVAI Dashboard" width="100%">
+
+### AI Chat
+
+<img src="screenshots/ai-chat.png" alt="SOVAI AI Chat" width="100%">
+
+---
+
 ## 📄 Document & Vision Processing
 
 The composer supports local file attachments.
+
+### Vision & OCR
+
+<img src="screenshots/vision-ocr.png" alt="SOVAI Vision, OCR & Multimodal Processing" width="100%">
+
+### Files & Documents
+
+<img src="screenshots/files-docs.png" alt="SOVAI Files & Documents" width="100%">
 
 | Attachment | Processing path |
 |---|---|
@@ -197,6 +217,8 @@ The default vision model is `qwen2.5vl:3b`.
 ## 📚 Local RAG Pipeline
 
 The local knowledge workflow is:
+
+<img src="screenshots/knowledge-base.png" alt="SOVAI Local Knowledge Base / RAG" width="100%">
 
 ```text
 Local Documents
@@ -286,6 +308,8 @@ The frontend provides a dedicated security area for showing:
 - Audit activity
 - Network monitoring
 - Verification status
+
+<img src="screenshots/administration.png" alt="SOVAI Administration - Create New System User" width="100%">
 
 Actual production security must be enforced at the infrastructure, operating-system, network, identity, and deployment levels as well as in the application.
 
